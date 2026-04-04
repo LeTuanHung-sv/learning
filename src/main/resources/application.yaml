@@ -1,3 +1,18 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: learning
+  datasource:
+    url: jdbc:mysql://localhost:3306/learning
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+      hibernate:
+        ddl-auto: update   # tạo bảng tự động theo Entity (hoặc validate / none)
+      show-sql: true
+      properties:
+         hibernate:
+          dialect: org.hibernate.dialect.MySQLDialect
