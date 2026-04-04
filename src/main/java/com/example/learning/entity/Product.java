@@ -7,7 +7,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 public class Product extends VersionedEntity {
