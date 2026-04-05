@@ -22,7 +22,7 @@ public class UserController {
 
   @GetMapping("/{id}")
   public ResponseEntity<UserResponseDTO> getByIdUser(@PathVariable UUID id){
-    return ResponseEntity.ok(userService.getUserById(id,dto));
+    return ResponseEntity.ok(userService.getUserById(id));
   }
 
   @PostMapping("/create")

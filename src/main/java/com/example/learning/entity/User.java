@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
