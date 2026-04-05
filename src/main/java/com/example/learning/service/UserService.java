@@ -5,6 +5,6 @@ import com.example.learning.dto.response.UserResponseDTO;
 import java.util.UUID;
 
 public interface UserService {
-  public UserResponseDTO getUserById(UUID id, UserRequestDTO dto);
+  public UserResponseDTO getUserById(UUID id);
   public UserResponseDTO createUser(UserRequestDTO dto);
 }
