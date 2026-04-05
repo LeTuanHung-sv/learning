@@ -7,7 +7,9 @@ import jakarta.persistence.Id;
 import lombok.Data;
 
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 public class Inventory extends VersionedEntity{
