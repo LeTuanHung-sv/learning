@@ -2,10 +2,11 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.UserRequestDTO;
 import com.example.learning.dto.response.UserResponseDTO;
+import java.util.UUID;
+import com.example.learning.entity.User;
 import com.example.learning.mapper.UserMapper;
 import com.example.learning.repository.UserRepository;
 import com.example.learning.service.UserService;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,21 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
-  public UserResponseDTO getUserById(UUID id, UserRequestDTO dto){
+  @Override
+  public UserResponseDTO getUserById(UUID id){
     return userRepository.findById(id)
         .map(userMapper::toResponse)
         .orElseThrow(()-> new RuntimeException("id not found"));
+  }
+  @Override
+  public UserResponseDTO createUser(UserRequestDTO dto) {
+    User user = User.builder()
+        .userName(dto.getUserName())
+        .phone(dto.getPhone())
+        .build();
+
+    User user1 = userRepository.save(user);
+
+    return userMapper.toResponse(user1);
   }
 }
