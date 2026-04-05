@@ -11,13 +11,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
 public class ProductResponseDTO {
   private UUID productId;
-  @NotBlank
   private String productName;
   private BigDecimal price;
   @Enumerated(EnumType.STRING)

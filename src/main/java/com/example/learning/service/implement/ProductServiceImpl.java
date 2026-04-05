@@ -23,4 +23,15 @@ public class ProductServiceImpl implements ProductService {
         .map(productMapper::DTO)
         .toList();
   }
+  @Override
+  public ProductResponseDTO createProduct(ProductRequestDTO dto){
+    Product product = Product.builder()
+        .productName(dto.getProductName())
+        .price(dto.getPrice())
+        .productStatus(dto.getProductStatus())
+        .build();
+
+    Product product1 = productRepository.save(product);
+    return productMapper.toDTO(product1);
+  }
 }
