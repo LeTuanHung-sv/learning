@@ -7,6 +7,6 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface OderMapper {
-  Oder Entity(OderRequestDTO oderRequestDTO);
+  Oder toEntity(OderRequestDTO dto);
   OderResponseDTO toResponse(Oder oder);
 }
