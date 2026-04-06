@@ -1,5 +1,9 @@
 package com.example.learning.controller;
 
+
+import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import com.example.learning.dto.request.OderRequestDTO;
 import com.example.learning.dto.response.OderResponseDTO;
 import com.example.learning.service.OderService;
@@ -15,8 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OderController {
-  public final OderService oderService;
+  private final OderService oderService;
 
+  @GetMapping("/get-order/{id}")
+  public ResponseEntity<OderResponseDTO> getById(@PathVariable UUID id){
+    return ResponseEntity.ok(oderService.getOderId(id));
+  }
   @PostMapping("/create")
   public ResponseEntity<OderResponseDTO> createOder(@Valid @RequestBody OderRequestDTO oderRequestDTO){
     return ResponseEntity.ok(oderService.create(oderRequestDTO));

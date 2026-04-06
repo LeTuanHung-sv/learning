@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class OderRequestDTO {
-//  private UUID userId;
+  private UUID userId;
   private BigDecimal totalAmount;
   private OderStatus oderStatus;
 }
