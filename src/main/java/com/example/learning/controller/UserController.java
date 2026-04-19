@@ -3,6 +3,7 @@ package com.example.learning.controller;
 import com.example.learning.dto.request.UserRequestDTO;
 import com.example.learning.dto.response.UserResponseDTO;
 import com.example.learning.service.UserService;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,4 +31,8 @@ public class UserController {
     return ResponseEntity.ok(userService.createUser(dto));
   }
 
+  @GetMapping("/getAll")
+  public ResponseEntity<List<UserResponseDTO>> getAll(@Valid @RequestBody UserRequestDTO dto){
+    return ResponseEntity.ok(userService.getAll(dto));
+  }
 }
