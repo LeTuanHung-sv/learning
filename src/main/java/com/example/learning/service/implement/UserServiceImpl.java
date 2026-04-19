@@ -34,4 +34,18 @@ public class UserServiceImpl implements UserService {
 
     return userMapper.toResponse(user1);
   }
+
+  @Override
+  public void updateUser(UUID id, UserRequestDTO dto) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+    if(dto.getUserName() != null)
+      user.setUserName(dto.getUserName());
+
+    if(dto.getPhone() != null)
+      user.setPhone(dto.getPhone());
+
+    userRepository.save(user);
+  }
 }
