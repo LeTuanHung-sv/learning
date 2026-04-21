@@ -9,4 +9,6 @@ public interface ProductService {
   public List<ProductResponseDTO> getProduct ();
   public ProductResponseDTO createProduct(ProductRequestDTO dto);
   public void updateProducts(UUID id, ProductRequestDTO dto);
+  public void deleteProducts(UUID id);
+
 }

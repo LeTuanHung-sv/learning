@@ -2,6 +2,8 @@ package com.example.learning.controller;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.example.learning.dto.request.ProductRequestDTO;
 import com.example.learning.dto.response.ProductResponseDTO;
@@ -34,9 +36,16 @@ public class ProductController {
     return ResponseEntity.ok(productService.createProduct(dto));
   }
 
+
   @PutMapping("/{id}")
   public ResponseEntity<String> updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductRequestDTO dto){
     productService.updateProducts(id,dto);
     return ResponseEntity.ok("Products success");
+  }
+  
+  @DeleteMapping("/{id}")
+  public ResponseEntity<String> deleteProduct(@PathVariable UUID id){
+    productService.deleteProducts(id);
+    return ResponseEntity.ok("Delete successfully");
   }
 }
