@@ -2,6 +2,7 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.UserRequestDTO;
 import com.example.learning.dto.response.UserResponseDTO;
+import java.util.List;
 import java.util.UUID;
 import com.example.learning.entity.User;
 import com.example.learning.mapper.UserMapper;
@@ -35,6 +36,14 @@ public class UserServiceImpl implements UserService {
     return userMapper.toResponse(user1);
   }
 
+  @Override
+  public List<UserResponseDTO> getAll(UserRequestDTO dto) {
+    return userRepository.findAll()
+        .stream()
+        .map(userMapper::toResponse)
+        .toList();
+  }
+  
   @Override
   public void updateUser(UUID id, UserRequestDTO dto) {
     User user = userRepository.findById(id)

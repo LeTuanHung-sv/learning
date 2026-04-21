@@ -3,6 +3,7 @@ package com.example.learning.controller;
 import com.example.learning.dto.request.UserRequestDTO;
 import com.example.learning.dto.response.UserResponseDTO;
 import com.example.learning.service.UserService;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +32,12 @@ public class UserController {
   public ResponseEntity<UserResponseDTO> createUser (@Valid @RequestBody UserRequestDTO dto){
     return ResponseEntity.ok(userService.createUser(dto));
   }
-
+  
+  @GetMapping("/getAll")
+  public ResponseEntity<List<UserResponseDTO>> getAll(@Valid @RequestBody UserRequestDTO dto){
+    return ResponseEntity.ok(userService.getAll(dto));
+  }
+  
   @PutMapping("/{id}")
   public ResponseEntity<String> updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequestDTO dto){
     userService.updateUser(id,dto);
