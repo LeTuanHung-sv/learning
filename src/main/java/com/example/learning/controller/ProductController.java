@@ -2,6 +2,7 @@ package com.example.learning.controller;
 
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.example.learning.dto.request.ProductRequestDTO;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,13 @@ public class ProductController {
     return ResponseEntity.ok(productService.createProduct(dto));
   }
 
+
+  @PutMapping("/{id}")
+  public ResponseEntity<String> updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductRequestDTO dto){
+    productService.updateProducts(id,dto);
+    return ResponseEntity.ok("Products success");
+  }
+  
   @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteProduct(@PathVariable UUID id){
     productService.deleteProducts(id);
