@@ -42,4 +42,28 @@ public class ProductServiceImpl implements ProductService {
         .map(productMapper::toDTO)
         .orElseThrow(() -> new RuntimeException("product not found"));
   }
+
+  @Override
+  public void updateProducts(UUID id, ProductRequestDTO dto) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+
+    if(dto.getProductName() != null){
+      product.setProductName(dto.getProductName());
+    }
+
+    if(dto.getPrice() != null){
+      product.setPrice(dto.getPrice());
+    }
+
+    productRepository.save(product);
+  }
+  
+  @Override
+  public void deleteProducts(UUID id){
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+
+    productRepository.delete(product);
+  }
 }
