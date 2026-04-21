@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface ProductService {
   public List<ProductResponseDTO> getProduct ();
   public ProductResponseDTO createProduct(ProductRequestDTO dto);
+  public ProductResponseDTO getProductsId(UUID id);
   public void updateProducts(UUID id, ProductRequestDTO dto);
   public void deleteProducts(UUID id);
-
 }

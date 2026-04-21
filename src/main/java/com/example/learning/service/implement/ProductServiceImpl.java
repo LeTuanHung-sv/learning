@@ -37,6 +37,13 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
+  public ProductResponseDTO getProductsId(UUID id) {
+    return productRepository.findById(id)
+        .map(productMapper::toDTO)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+  }
+
+  @Override
   public void updateProducts(UUID id, ProductRequestDTO dto) {
     Product product = productRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("product not found"));
