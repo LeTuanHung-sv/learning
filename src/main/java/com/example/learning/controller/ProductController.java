@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
   private final ProductService productService;
 
-
   @GetMapping("/getAll")
   public ResponseEntity<List<ProductResponseDTO>> getProduct(){
     return ResponseEntity.ok(productService.getProduct());
@@ -37,9 +36,9 @@ public class ProductController {
   }
   
   @GetMapping("/{id}")
-  public ResponseEntity<ProductResponseDTO> getProductsId(@PathVariable UUID id)
-  {
+  public ResponseEntity<ProductResponseDTO> getProductsId(@PathVariable UUID id) {
     return ResponseEntity.ok(productService.getProductsId(id));
+  }
 
   @PutMapping("/{id}")
   public ResponseEntity<String> updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductRequestDTO dto){
