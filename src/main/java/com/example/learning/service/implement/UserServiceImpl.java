@@ -36,6 +36,20 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public void updateUser(UUID id, UserRequestDTO dto) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+    if(dto.getUserName() != null)
+      user.setUserName(dto.getUserName());
+
+    if(dto.getPhone() != null)
+      user.setPhone(dto.getPhone());
+
+    userRepository.save(user);
+  }
+  
+  @Override
   public void deleteUser(UUID id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("user not found"));
