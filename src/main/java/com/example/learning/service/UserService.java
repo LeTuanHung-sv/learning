@@ -9,4 +9,6 @@ public interface UserService {
   public UserResponseDTO getUserById(UUID id);
   public UserResponseDTO createUser(UserRequestDTO dto);
   public List<UserResponseDTO> getAll(UserRequestDTO dto);
+  public void updateUser(UUID id, UserRequestDTO dto);
+  public void deleteUser(UUID id);
 }

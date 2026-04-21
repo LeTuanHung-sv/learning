@@ -5,12 +5,14 @@ import com.example.learning.dto.response.UserResponseDTO;
 import com.example.learning.service.UserService;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,9 +32,21 @@ public class UserController {
   public ResponseEntity<UserResponseDTO> createUser (@Valid @RequestBody UserRequestDTO dto){
     return ResponseEntity.ok(userService.createUser(dto));
   }
-
+  
   @GetMapping("/getAll")
   public ResponseEntity<List<UserResponseDTO>> getAll(@Valid @RequestBody UserRequestDTO dto){
     return ResponseEntity.ok(userService.getAll(dto));
+  }
+  
+  @PutMapping("/{id}")
+  public ResponseEntity<String> updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequestDTO dto){
+    userService.updateUser(id,dto);
+    return ResponseEntity.ok("Update success");
+  }
+  
+  @DeleteMapping("/{id}")
+  public ResponseEntity<String> deleteUser(@PathVariable UUID id){
+    userService.deleteUser(id);
+    return ResponseEntity.ok("Delete successfully");
   }
 }
