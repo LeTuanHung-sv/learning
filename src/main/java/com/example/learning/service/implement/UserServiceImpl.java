@@ -48,4 +48,11 @@ public class UserServiceImpl implements UserService {
 
     userRepository.save(user);
   }
+  
+  @Override
+  public void deleteUser(UUID id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("user not found"));
+    userRepository.delete(user);
+  }
 }
