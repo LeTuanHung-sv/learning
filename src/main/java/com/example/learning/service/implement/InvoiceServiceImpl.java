@@ -6,6 +6,7 @@ import com.example.learning.entity.Invoice;
 import com.example.learning.mapper.InvoiceMapper;
 import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.service.InvoiceService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,4 +23,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     Invoice saved = invoiceRepository.save(invoice);
     return invoiceMapper.toResponse(saved);
   }
+
+  @Override
+  public List<InvoiceResponseDTO> getAllInvoice() {
+    return invoiceRepository.findAll()
+        .stream()
+        .map(invoiceMapper::toResponse)
+        .toList();
+  }
+
 }
