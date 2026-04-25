@@ -6,6 +6,7 @@ import com.example.learning.entity.Inventory;
 import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.repository.InventoryRepository;
 import com.example.learning.service.InventoryService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,5 +23,19 @@ public class InventoryServiceImpl implements InventoryService {
 
     Inventory saved = inventoryRepository.save(inventory);
     return inventoryMapper.toResponse(saved);
+  }
+
+  @Override
+  public void updateInventory(UUID id, InventoryRequestDTO dto) {
+    Inventory inventory = inventoryRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Inventory not found"));
+
+    if(dto.getProductId() != null)
+      inventory.setProductId(dto.getProductId());
+
+    if(dto.getQuantity() != null)
+      inventory.setQuantity(dto.getQuantity());
+
+    inventoryRepository.save(inventory);
   }
 }
