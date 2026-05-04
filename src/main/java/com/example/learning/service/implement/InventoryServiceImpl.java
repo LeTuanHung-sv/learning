@@ -26,6 +26,19 @@ public class InventoryServiceImpl implements InventoryService {
   }
 
   @Override
+  public void updateInventory(UUID id, InventoryRequestDTO dto) {
+    Inventory inventory = inventoryRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Inventory not found"));
+
+    if(dto.getProductId() != null)
+      inventory.setProductId(dto.getProductId());
+
+    if(dto.getQuantity() != null)
+      inventory.setQuantity(dto.getQuantity());
+
+    inventoryRepository.save(inventory);
+}
+  @Override
   public Inventory getInventoryProductId(UUID productId) {
     return inventoryRepository.findByProductId(productId)
         .orElseThrow(() -> new RuntimeException("Inventory not found"));
