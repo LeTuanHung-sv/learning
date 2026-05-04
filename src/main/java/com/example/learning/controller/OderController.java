@@ -37,6 +37,7 @@ public class OderController {
 
   @PostMapping("/orderItem")
   public ResponseEntity<String> createOrderItem(@Valid @RequestBody OderRequestDTO dto){
+    System.out.println(dto);
     oderService.createOrderItem(dto);
     return ResponseEntity.ok("Created");
   }
