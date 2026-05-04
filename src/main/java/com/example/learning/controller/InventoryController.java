@@ -2,11 +2,13 @@ package com.example.learning.controller;
 
 import com.example.learning.dto.request.InventoryRequestDTO;
 import com.example.learning.dto.response.InventoryResponseDTO;
+import com.example.learning.entity.Inventory;
 import com.example.learning.service.InventoryService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,5 +31,11 @@ public class InventoryController {
   public ResponseEntity<String> updateInventory(@PathVariable UUID id, @Valid @RequestBody InventoryRequestDTO dto){
     inventoryService.updateInventory(id, dto);
     return ResponseEntity.ok("Update success");
+  }
+  
+  @GetMapping("/{productId}")
+  public ResponseEntity<Inventory> getInventoryProductId(@PathVariable UUID productId){
+    Inventory inventory = inventoryService.getInventoryProductId(productId);
+    return ResponseEntity.ok(inventory);
   }
 }
