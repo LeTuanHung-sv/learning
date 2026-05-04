@@ -34,4 +34,10 @@ public class OderController {
   public ResponseEntity<List<OderResponseDTO>> getAllOrders(){
     return ResponseEntity.ok(oderService.getAllOder());
   }
+
+  @PostMapping("/orderItem")
+  public ResponseEntity<String> createOrderItem(@Valid @RequestBody OderRequestDTO dto){
+    oderService.createOrderItem(dto);
+    return ResponseEntity.ok("Created");
+  }
 }

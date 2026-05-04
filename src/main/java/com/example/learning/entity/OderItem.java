@@ -17,7 +17,7 @@ public class OderItem extends VersionedEntity{
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
     private UUID OderItemId;
-    private UUID oderId;
+    private UUID orderId;
     private UUID productId;
     private BigDecimal quantity;
     private BigDecimal price;
