@@ -10,4 +10,5 @@ public interface OderService {
   public OderResponseDTO create(OderRequestDTO oderRequestDTO);
   public List<OderResponseDTO> getAllOder();
   public void createOrderItem(OderRequestDTO request);
+  public OderResponseDTO payOrder(UUID id);
 }
