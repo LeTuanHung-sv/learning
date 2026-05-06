@@ -78,5 +78,16 @@ public class OderServiceImpl implements OderService {
     }
   }
 
+  @Override
+  public OderResponseDTO payOrder(UUID id) {
+    Oder oder = oderRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Order not found"));
 
+    if(oder.getOderStatus() != OderStatus.PENDING)
+      throw new RuntimeException("Only PENDING orders can be PAID");
+
+    oder.setOderStatus(OderStatus.PAID);
+
+    return oderMapper.toResponse(oderRepository.save(oder));
+  }
 }
