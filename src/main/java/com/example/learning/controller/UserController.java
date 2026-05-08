@@ -32,7 +32,7 @@ public class UserController {
   }
 
   @GetMapping("/getAll")
-  public ResponseEntity<List<UserResponseDTO>> getAll(@Valid @RequestBody UserRequestDTO dto){
-    return ResponseEntity.ok(userService.getAll(dto));
+  public ResponseEntity<List<UserResponseDTO>> getAll(){
+    return ResponseEntity.ok(userService.getAll());
   }
 }
