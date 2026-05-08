@@ -7,6 +7,7 @@ import com.example.learning.mapper.ProductMapper;
 import com.example.learning.repository.ProductRepository;
 import com.example.learning.service.ProductService;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,5 +34,36 @@ public class ProductServiceImpl implements ProductService {
 
     Product product1 = productRepository.save(product);
     return productMapper.toDTO(product1);
+  }
+
+  @Override
+  public ProductResponseDTO getProductsId(UUID id) {
+    return productRepository.findById(id)
+        .map(productMapper::toDTO)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+  }
+
+  @Override
+  public void updateProducts(UUID id, ProductRequestDTO dto) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+
+    if(dto.getProductName() != null){
+      product.setProductName(dto.getProductName());
+    }
+
+    if(dto.getPrice() != null){
+      product.setPrice(dto.getPrice());
+    }
+
+    productRepository.save(product);
+  }
+  
+  @Override
+  public void deleteProducts(UUID id){
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+
+    productRepository.delete(product);
   }
 }

@@ -1,6 +1,7 @@
 package com.example.learning.controller;
 
 
+import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,5 +29,9 @@ public class OderController {
   @PostMapping("/create")
   public ResponseEntity<OderResponseDTO> createOder(@Valid @RequestBody OderRequestDTO oderRequestDTO){
     return ResponseEntity.ok(oderService.create(oderRequestDTO));
+  }
+  @GetMapping("/All")
+  public ResponseEntity<List<OderResponseDTO>> getAllOrders(){
+    return ResponseEntity.ok(oderService.getAllOder());
   }
 }
