@@ -11,4 +11,5 @@ public interface OderService {
   public List<OderResponseDTO> getAllOder();
   public void createOrderItem(OderRequestDTO request);
   public OderResponseDTO payOrder(UUID id);
+  public OderResponseDTO cancelOrder(UUID id);
 }

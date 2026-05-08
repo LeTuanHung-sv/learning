@@ -90,4 +90,22 @@ public class OderServiceImpl implements OderService {
 
     return oderMapper.toResponse(oderRepository.save(oder));
   }
+
+  @Override
+  public OderResponseDTO cancelOrder(UUID id){
+    Oder oder = oderRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Order not found"));
+
+    if(oder.getOderStatus() == OderStatus.PAID)
+      throw new RuntimeException("Paid order cannot be cancelled");
+
+    if(oder.getOderStatus() == OderStatus.CANCELLED)
+      throw new RuntimeException("Order already cancelled");
+
+    oder.setOderStatus(OderStatus.CANCELLED);
+
+    Oder saved = oderRepository.save(oder);
+
+    return oderMapper.toResponse(saved);
+  }
 }
