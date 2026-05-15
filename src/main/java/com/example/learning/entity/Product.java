@@ -3,6 +3,7 @@ package com.example.learning.entity;
 import com.example.learning.enums.ProductStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class Product extends VersionedEntity {
     private UUID productId;
     @NotBlank
     private String productName;
+    @PositiveOrZero
     private BigDecimal price;
     @Enumerated(EnumType.STRING)
     private ProductStatus productStatus;

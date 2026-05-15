@@ -2,6 +2,7 @@ package com.example.learning.dto.response;
 
 import com.example.learning.dto.request.OderItemRequestDTO;
 import com.example.learning.entity.OderItem;
+import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.OderStatus;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,9 +17,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class OderResponseDTO {
-  private UUID oderId;
-  private UUID userId;
+  private UUID orderId;
+  private UUID invoiceId;
   private BigDecimal totalAmount;
-  private OderStatus oderStatus;
-  private List<OderItemRequestDTO> items;
+  private OderStatus orderStatus;
+  private InvoiceStatus invoiceStatus;
 }

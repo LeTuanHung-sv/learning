@@ -52,4 +52,9 @@ public class OderController {
   public ResponseEntity<OderResponseDTO> cancelOrder(@PathVariable UUID id){
     return ResponseEntity.ok(oderService.cancelOrder(id));
   }
+
+  @PostMapping("/create/business")
+  public ResponseEntity<OderResponseDTO> createBusiness(@Valid @RequestBody OderRequestDTO oderRequestDTO){
+    return ResponseEntity.ok(oderService.createOrder(oderRequestDTO));
+  }
 }
