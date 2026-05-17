@@ -2,9 +2,12 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.OderItemRequestDTO;
 import com.example.learning.dto.response.OderItemResponse;
+import com.example.learning.entity.Invoice;
 import com.example.learning.entity.OderItem;
 import com.example.learning.entity.Product;
+import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.OderStatus;
+import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.repository.OderItemRepository;
 import com.example.learning.repository.ProductRepository;
 import java.math.BigDecimal;
@@ -28,6 +31,7 @@ public class OderServiceImpl implements OderService {
   private final OderMapper oderMapper;
   private final OderItemRepository oderItemRepository;
   private final ProductRepository productRepository;
+  private final InvoiceRepository invoiceRepository;
 
   @Override
   public OderResponseDTO getOderId(UUID id) {
@@ -79,16 +83,36 @@ public class OderServiceImpl implements OderService {
   }
 
   @Override
+  @Transactional
   public OderResponseDTO payOrder(UUID id) {
+    // 1. Tìm Order
     Oder oder = oderRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Order not found"));
 
-    if(oder.getOderStatus() != OderStatus.PENDING)
+    // 2. Chỉ cho phép thanh toán đơn đang PENDING
+    if (oder.getOderStatus() != OderStatus.PENDING) {
       throw new RuntimeException("Only PENDING orders can be PAID");
+    }
 
+    // 3. Tìm Invoice
+    Invoice invoice = invoiceRepository.findByOrderId(oder.getOderId())
+        .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+    // 4. Không cho thanh toán lại
+    if (invoice.getInvoiceStatus() == InvoiceStatus.PAID) {
+      throw new RuntimeException("Invoice already paid");
+    }
+
+    // 5. Cập nhật Invoice
+    invoice.setInvoiceStatus(InvoiceStatus.PAID);
+    invoiceRepository.save(invoice);
+
+    // 6. Cập nhật Order
     oder.setOderStatus(OderStatus.PAID);
+    Oder saved = oderRepository.save(oder);
 
-    return oderMapper.toResponse(oderRepository.save(oder));
+    // 7. Trả response
+    return oderMapper.toResponse(saved);
   }
 
   @Override
