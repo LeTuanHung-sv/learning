@@ -2,8 +2,11 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.ProductRequestDTO;
 import com.example.learning.dto.response.ProductResponseDTO;
+import com.example.learning.entity.Inventory;
 import com.example.learning.entity.Product;
+import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.mapper.ProductMapper;
+import com.example.learning.repository.InventoryRepository;
 import com.example.learning.repository.ProductRepository;
 import com.example.learning.service.ProductService;
 import java.util.List;
@@ -16,6 +19,9 @@ import org.springframework.stereotype.Service;
 public class ProductServiceImpl implements ProductService {
   private final ProductRepository productRepository;
   private final ProductMapper productMapper;
+  private final InventoryRepository inventoryRepository;
+
+
 
   @Override
   public List<ProductResponseDTO> getProduct() {
@@ -27,13 +33,14 @@ public class ProductServiceImpl implements ProductService {
   
   @Override
   public ProductResponseDTO createProduct(ProductRequestDTO dto){
-    Product product = Product.builder()
-        .productName(dto.getProductName())
-        .price(dto.getPrice())
-        .productStatus(dto.getProductStatus())
-        .build();
-
+    Product product = productMapper.toEntity(dto);
     Product product1 = productRepository.save(product);
+
+    Inventory inventory = new Inventory();
+    inventory.setProductId(product1.getProductId());
+    inventory.setQuantity(0);
+    inventoryRepository.save(inventory);
+
     return productMapper.toDTO(product1);
   }
 
