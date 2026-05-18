@@ -4,6 +4,7 @@ import com.example.learning.dto.request.ProductRequestDTO;
 import com.example.learning.dto.response.ProductResponseDTO;
 import com.example.learning.entity.Inventory;
 import com.example.learning.entity.Product;
+import com.example.learning.enums.ProductStatus;
 import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.mapper.ProductMapper;
 import com.example.learning.repository.InventoryRepository;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -73,5 +75,16 @@ public class ProductServiceImpl implements ProductService {
         .orElseThrow(() -> new RuntimeException("product not found"));
 
     productRepository.delete(product);
+  }
+
+  @Override
+  @Transactional
+  public void patchProducts(UUID id, ProductStatus Status){
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("product not found"));
+
+    product.setProductStatus(Status);
+
+    productRepository.save(product);
   }
 }

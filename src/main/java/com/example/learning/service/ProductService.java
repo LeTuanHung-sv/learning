@@ -2,6 +2,7 @@ package com.example.learning.service;
 
 import com.example.learning.dto.request.ProductRequestDTO;
 import com.example.learning.dto.response.ProductResponseDTO;
+import com.example.learning.enums.ProductStatus;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,4 +12,5 @@ public interface ProductService {
   public ProductResponseDTO getProductsId(UUID id);
   public void updateProducts(UUID id, ProductRequestDTO dto);
   public void deleteProducts(UUID id);
+  public void patchProducts(UUID id, ProductStatus Status);
 }
