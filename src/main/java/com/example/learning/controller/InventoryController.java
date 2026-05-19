@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,4 +39,12 @@ public class InventoryController {
     Inventory inventory = inventoryService.getInventoryProductId(productId);
     return ResponseEntity.ok(inventory);
   }
+
+  @PatchMapping("/{productId}/restock")
+  public ResponseEntity<String> restock(@PathVariable UUID productId, @RequestBody InventoryRequestDTO dto)
+  {
+    inventoryService.restock(productId, dto.getQuantity());
+    return ResponseEntity.ok("Update success");
+  }
 }
+

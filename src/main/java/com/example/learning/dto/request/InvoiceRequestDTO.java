@@ -19,5 +19,4 @@ public class InvoiceRequestDTO {
   private BigDecimal totalAmount;
   private PaymentMethod paymentMethod;
   private InvoiceStatus invoiceStatus;
-
 }
