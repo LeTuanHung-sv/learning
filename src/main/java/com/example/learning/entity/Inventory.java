@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.util.UUID;
@@ -17,6 +19,8 @@ public class Inventory extends VersionedEntity{
     @Id
     private UUID inventoryId;
     private UUID productId;
+    @NotNull
+    @PositiveOrZero
     private Integer quantity;
 
 }

@@ -1,13 +1,13 @@
 package com.example.learning.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.UUID;
-import lombok.EqualsAndHashCode;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
@@ -21,9 +21,11 @@ public class User extends VersionedEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
     private UUID userId;
-    @NotBlank
-    private String userName;
-    @NotBlank
+    @NotNull
+    private String fullName;
+    @NotNull
+    @Max(15)
     private String phone;
-
+    @NotNull
+    private String address;
 }
