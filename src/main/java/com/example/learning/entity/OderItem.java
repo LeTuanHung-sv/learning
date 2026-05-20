@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class OderItem extends VersionedEntity{
     private UUID orderId;
     private UUID productId;
     private BigDecimal quantity;
-    private BigDecimal price;
+    private BigDecimal unitPrice;
+    private BigDecimal subtotal;
 
 }
