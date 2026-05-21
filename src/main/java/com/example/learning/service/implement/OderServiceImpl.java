@@ -2,15 +2,21 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.OderItemRequestDTO;
 import com.example.learning.dto.response.OderItemResponse;
+import com.example.learning.entity.Inventory;
 import com.example.learning.entity.Invoice;
 import com.example.learning.entity.OderItem;
 import com.example.learning.entity.Product;
+import com.example.learning.entity.User;
 import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.OderStatus;
+import com.example.learning.enums.ProductStatus;
+import com.example.learning.repository.InventoryRepository;
 import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.repository.OderItemRepository;
 import com.example.learning.repository.ProductRepository;
+import com.example.learning.repository.UserRepository;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +38,8 @@ public class OderServiceImpl implements OderService {
   private final OderItemRepository oderItemRepository;
   private final ProductRepository productRepository;
   private final InvoiceRepository invoiceRepository;
-
+  private final InventoryRepository inventoryRepository;
+  private final UserRepository userRepository;
   @Override
   public OderResponseDTO getOderId(UUID id) {
     return oderRepository.findById(id)
@@ -77,7 +84,7 @@ public class OderServiceImpl implements OderService {
       Product product = productRepository.findById(item.getProductId())
               .orElseThrow();
 
-      item.setPrice(product.getPrice());
+      item.setUnitPrice(product.getPrice());
       oderItemRepository.save(item);
     }
   }
@@ -131,5 +138,65 @@ public class OderServiceImpl implements OderService {
     Oder saved = oderRepository.save(oder);
 
     return oderMapper.toResponse(saved);
+  }
+
+  @Override
+  @Transactional
+  public OderResponseDTO placeOrder(OderRequestDTO oderRequestDTO){
+    BigDecimal totalAmount = BigDecimal.ZERO;
+
+    List<OderItem> oderItemArrayList = new ArrayList<>();
+
+    Oder oder = oderMapper.toEntity(oderRequestDTO);
+    oder.setOderStatus(OderStatus.PENDING);
+    oder = oderRepository.save(oder);
+
+    User user = userRepository.findById(oderRequestDTO.getUserId())
+        .orElseThrow(()-> new RuntimeException("User not found"));
+
+    if(oderRequestDTO.getItems() == null || oderRequestDTO.getItems().isEmpty())
+      throw new RuntimeException("Items cannot be empty");
+
+    for(OderItemRequestDTO oderItemRequestDTO : oderRequestDTO.getItems()){
+      Product product = productRepository.findById(oderItemRequestDTO.getProductId())
+          .orElseThrow(()-> new RuntimeException("product not found"));
+
+      if(product.getProductStatus() != ProductStatus.Active)
+        throw new RuntimeException("product is not active");
+
+      Inventory inventory = inventoryRepository.findByProductId(product.getProductId())
+          .orElseThrow(()-> new RuntimeException("Inventory not found"));
+
+      if(inventory.getQuantity() < oderItemRequestDTO.getQuantity().intValue())
+        throw new RuntimeException("not enough stock");
+
+      OderItem oderItem = new OderItem();
+      oderItem.setOrderId(oder.getOderId());
+      oderItem.setProductId(product.getProductId());
+      oderItem.setQuantity(oderItemRequestDTO.getQuantity());
+      oderItem.setUnitPrice(product.getPrice());
+      BigDecimal subtotal = product.getPrice().multiply(oderItemRequestDTO.getQuantity());
+      oderItem.setSubtotal(subtotal);
+
+      oderItemArrayList.add(oderItem);
+      totalAmount = totalAmount.add(subtotal);
+
+      inventory.setQuantity(inventory.getQuantity() - oderItemRequestDTO.getQuantity().intValue());
+      inventoryRepository.save(inventory);
+    }
+
+    oderItemRepository.saveAll(oderItemArrayList);
+
+    oder.setTotalAmount(totalAmount);
+    oderRepository.save(oder);
+
+    Invoice invoice = new Invoice();
+    invoice.setOderId(oder.getOderId());
+    invoice.setTotalAmount(totalAmount);
+    invoice.setInvoiceStatus(InvoiceStatus.UNPAID);
+    invoiceRepository.save(invoice);
+
+    return oderMapper.toResponse(oder);
+
   }
 }
