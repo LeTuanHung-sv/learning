@@ -18,33 +18,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
   private final UserService userService;
 
-  @GetMapping("/{id}")
+  @GetMapping("/users/{id}")
   public ResponseEntity<UserResponseDTO> getByIdUser(@PathVariable UUID id){
     return ResponseEntity.ok(userService.getUserById(id));
   }
 
-  @PostMapping("/create")
+  @PostMapping("users")
   public ResponseEntity<UserResponseDTO> createUser (@Valid @RequestBody UserRequestDTO dto){
     return ResponseEntity.ok(userService.createUser(dto));
   }
   
-  @GetMapping("/getAll")
+  @GetMapping("/users")
   public ResponseEntity<List<UserResponseDTO>> getAll(){
     return ResponseEntity.ok(userService.getAll());
   }
   
-  @PutMapping("/{id}")
+  @PutMapping("users/{id}")
   public ResponseEntity<String> updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequestDTO dto){
     userService.updateUser(id,dto);
     return ResponseEntity.ok("Update success");
   }
   
-  @DeleteMapping("/{id}")
+  @DeleteMapping("users/{id}")
   public ResponseEntity<String> deleteUser(@PathVariable UUID id){
     userService.deleteUser(id);
     return ResponseEntity.ok("Delete successfully");

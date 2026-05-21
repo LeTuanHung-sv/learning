@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class OderController {
   private final OderService oderService;
@@ -52,4 +52,5 @@ public class OderController {
   public ResponseEntity<OderResponseDTO> cancelOrder(@PathVariable UUID id){
     return ResponseEntity.ok(oderService.cancelOrder(id));
   }
+
 }
