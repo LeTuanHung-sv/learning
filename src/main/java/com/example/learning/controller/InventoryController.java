@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/Inventories")
+@RequestMapping("/api")
 public class InventoryController {
   private final InventoryService inventoryService;
 
@@ -33,7 +33,7 @@ public class InventoryController {
     return ResponseEntity.ok("Update success");
   }
   
-  @GetMapping("/{productId}")
+  @GetMapping("inventory/{productId}")
   public ResponseEntity<Inventory> getInventoryProductId(@PathVariable UUID productId){
     Inventory inventory = inventoryService.getInventoryProductId(productId);
     return ResponseEntity.ok(inventory);
