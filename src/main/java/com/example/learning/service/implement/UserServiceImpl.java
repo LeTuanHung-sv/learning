@@ -26,10 +26,7 @@ public class UserServiceImpl implements UserService {
   }
   @Override
   public UserResponseDTO createUser(UserRequestDTO dto) {
-    User user = User.builder()
-        .userName(dto.getUserName())
-        .phone(dto.getPhone())
-        .build();
+    User user = userMapper.toEntity(dto);
 
     User user1 = userRepository.save(user);
 
@@ -50,7 +47,7 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new RuntimeException("User not found"));
 
     if(dto.getUserName() != null)
-      user.setUserName(dto.getUserName());
+      user.setFullName(dto.getUserName());
 
     if(dto.getPhone() != null)
       user.setPhone(dto.getPhone());
