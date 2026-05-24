@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -53,4 +54,8 @@ public class OderController {
     return ResponseEntity.ok(oderService.cancelOrder(id));
   }
 
+  @GetMapping("/orders")
+  public List<OderResponseDTO> getOderByUserId(@RequestParam UUID userId){
+    return oderService.displayOrder(userId);
+  }
 }

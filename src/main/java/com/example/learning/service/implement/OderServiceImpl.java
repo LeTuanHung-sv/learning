@@ -1,20 +1,19 @@
 package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.OderItemRequestDTO;
-import com.example.learning.dto.response.OderItemResponse;
 import com.example.learning.entity.Invoice;
 import com.example.learning.entity.OderItem;
 import com.example.learning.entity.Product;
+import com.example.learning.entity.User;
 import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.OderStatus;
 import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.repository.OderItemRepository;
 import com.example.learning.repository.ProductRepository;
-import java.math.BigDecimal;
+import com.example.learning.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 import com.example.learning.dto.request.OderRequestDTO;
 import com.example.learning.dto.response.OderResponseDTO;
 import com.example.learning.entity.Oder;
@@ -32,6 +31,7 @@ public class OderServiceImpl implements OderService {
   private final OderItemRepository oderItemRepository;
   private final ProductRepository productRepository;
   private final InvoiceRepository invoiceRepository;
+  private final UserRepository userRepository;
 
   @Override
   public OderResponseDTO getOderId(UUID id) {
@@ -77,7 +77,7 @@ public class OderServiceImpl implements OderService {
       Product product = productRepository.findById(item.getProductId())
               .orElseThrow();
 
-      item.setPrice(product.getPrice());
+      item.setUnitPrice(product.getPrice());
       oderItemRepository.save(item);
     }
   }
@@ -132,4 +132,19 @@ public class OderServiceImpl implements OderService {
 
     return oderMapper.toResponse(saved);
   }
+
+  @Override
+  public List<OderResponseDTO> displayOrder(UUID id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(()-> new RuntimeException("User not found"));
+
+    List<Oder> orders = oderRepository.findByUser(user);
+
+    return orders.stream()
+        .map(oderMapper::toResponse)
+        .toList();
+  }
+
+
+
 }
