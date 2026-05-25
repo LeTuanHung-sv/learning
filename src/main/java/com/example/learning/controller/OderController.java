@@ -4,6 +4,7 @@ package com.example.learning.controller;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.example.learning.dto.request.OderRequestDTO;
 import com.example.learning.dto.response.OderResponseDTO;
@@ -53,4 +54,9 @@ public class OderController {
     return ResponseEntity.ok(oderService.cancelOrder(id));
   }
 
+  @PatchMapping("/id/status")
+  public ResponseEntity<String> updateStatus(@PathVariable UUID id, @RequestBody OderRequestDTO requestDTO){
+    oderService.updateStatus(id, requestDTO.getOderStatus());
+    return ResponseEntity.ok("Update status success");
+  }
 }
