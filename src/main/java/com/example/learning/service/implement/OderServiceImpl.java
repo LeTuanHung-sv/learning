@@ -77,7 +77,7 @@ public class OderServiceImpl implements OderService {
       Product product = productRepository.findById(item.getProductId())
               .orElseThrow();
 
-      item.setPrice(product.getPrice());
+      item.setUnitPrice(product.getPrice());
       oderItemRepository.save(item);
     }
   }
@@ -131,5 +131,30 @@ public class OderServiceImpl implements OderService {
     Oder saved = oderRepository.save(oder);
 
     return oderMapper.toResponse(saved);
+  }
+
+  public void updateStatus(UUID uuid, OderStatus oderStatus){
+    Oder oder = oderRepository.findById(uuid)
+        .orElseThrow(() -> new RuntimeException("order not found"));
+
+    OderStatus oderStatus1 = oder.getOderStatus();
+
+    if(oderStatus1 == OderStatus.PENDING && oderStatus != OderStatus.CONFIRMED
+                                         && oderStatus != OderStatus.CANCELLED){
+      throw new RuntimeException("PENDING chỉ được chuyển sang CONFIRMED or CANCELLED");
+    }
+
+    if(oderStatus1 == OderStatus.CONFIRMED && oderStatus != OderStatus.DELIVERING
+                                           && oderStatus != OderStatus.CANCELLED){
+      throw new RuntimeException("CONFIRMED chỉ được chuyển sang DELIVERING or CANCELLED");
+    }
+
+    if(oderStatus1 == OderStatus.DELIVERING && oderStatus != OderStatus.COMPLETED){
+      throw new RuntimeException("DELIVERING chỉ chuyển sang COMPLETED");
+    }
+
+    oder.setOderStatus(oderStatus);
+
+    oderRepository.save(oder);
   }
 }
