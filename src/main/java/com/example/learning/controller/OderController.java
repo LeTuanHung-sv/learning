@@ -49,9 +49,9 @@ public class OderController {
     return ResponseEntity.ok(oderService.payOrder(id));
   }
 
-  @PutMapping("/{id}/cancel")
+  @PatchMapping("/{id}/cancel")
   public ResponseEntity<OderResponseDTO> cancelOrder(@PathVariable UUID id){
-    return ResponseEntity.ok(oderService.cancelOrder(id));
+    return ResponseEntity.ok(oderService.cancelOder(id));
   }
 
   @PatchMapping("/id/status")

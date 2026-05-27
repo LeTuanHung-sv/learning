@@ -2,7 +2,6 @@ package com.example.learning.service;
 
 import com.example.learning.dto.response.OderResponseDTO;
 import com.example.learning.dto.request.OderRequestDTO;
-import com.example.learning.entity.Oder;
 import com.example.learning.enums.OderStatus;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +12,6 @@ public interface OderService {
   public List<OderResponseDTO> getAllOder();
   public void createOrderItem(OderRequestDTO request);
   public OderResponseDTO payOrder(UUID id);
-  public OderResponseDTO cancelOrder(UUID id);
+  public OderResponseDTO cancelOder(UUID id);
   public void updateStatus(UUID id, OderStatus status);
 }

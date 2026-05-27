@@ -1,20 +1,20 @@
 package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.OderItemRequestDTO;
-import com.example.learning.dto.response.OderItemResponse;
+import com.example.learning.entity.Inventory;
 import com.example.learning.entity.Invoice;
 import com.example.learning.entity.OderItem;
 import com.example.learning.entity.Product;
 import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.OderStatus;
+import com.example.learning.repository.InventoryRepository;
 import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.repository.OderItemRepository;
 import com.example.learning.repository.ProductRepository;
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 import com.example.learning.dto.request.OderRequestDTO;
 import com.example.learning.dto.response.OderResponseDTO;
 import com.example.learning.entity.Oder;
@@ -32,6 +32,7 @@ public class OderServiceImpl implements OderService {
   private final OderItemRepository oderItemRepository;
   private final ProductRepository productRepository;
   private final InvoiceRepository invoiceRepository;
+  private final InventoryRepository inventoryRepository;
 
   @Override
   public OderResponseDTO getOderId(UUID id) {
@@ -115,23 +116,97 @@ public class OderServiceImpl implements OderService {
     return oderMapper.toResponse(saved);
   }
 
+  private static final Set<OderStatus> NOT_CANCELABLE_STATUS =
+      Set.of(
+          OderStatus.DELIVERING,
+          OderStatus.COMPLETED
+      );
+
   @Override
-  public OderResponseDTO cancelOrder(UUID id){
-    Oder oder = oderRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Order not found"));
+  @Transactional
+  public OderResponseDTO cancelOder(UUID id){
+    Oder oder = getOrderById(id);
 
-    if(oder.getOderStatus() == OderStatus.PAID)
-      throw new RuntimeException("Paid order cannot be cancelled");
+    validateCancelable(oder);
 
-    if(oder.getOderStatus() == OderStatus.CANCELLED)
-      throw new RuntimeException("Order already cancelled");
+    cancelOrderStatus(oder);
 
-    oder.setOderStatus(OderStatus.CANCELLED);
+    restoreInventory(id);
 
-    Oder saved = oderRepository.save(oder);
+    cancelInvoice(oder);
 
-    return oderMapper.toResponse(saved);
+    saveOrder(oder);
+
+    return mapToResponse(oder);
   }
+
+  private Oder getOrderById(UUID orderId) {
+
+    return oderRepository.findById(orderId)
+        .orElseThrow(() ->
+            new RuntimeException("Order not found")
+        );
+  }
+
+  private void validateCancelable(Oder order) {
+
+    if (NOT_CANCELABLE_STATUS.contains(order.getOderStatus())) {
+
+      throw new RuntimeException(
+          "Cannot cancel order in status: "
+              + order.getOderStatus()
+      );
+    }
+  }
+
+  private void cancelOrderStatus(Oder order) {
+
+    order.setOderStatus(OderStatus.CANCELLED);
+  }
+
+  private void restoreInventory(UUID orderId) {
+    List<OderItem> orderItems =
+        oderItemRepository.findByOrderId(orderId);
+
+    orderItems.forEach(item -> {
+      Inventory inventory =
+          inventoryRepository
+              .findByProductId(item.getProductId())
+              .orElseThrow(() ->
+                  new RuntimeException(
+                      "Inventory not found"
+                  )
+              );
+      inventory.setQuantity(
+          inventory.getQuantity()
+              + item.getQuantity().intValue()
+      );
+      inventoryRepository.save(inventory);
+    });
+  }
+
+  private void cancelInvoice(Oder order) {
+
+    Invoice invoice =
+        invoiceRepository.findByOrderId(
+            order.getOderId()
+        ).orElseThrow(() ->
+            new RuntimeException(
+                "Invoice not found"
+            )
+        );
+    invoice.setInvoiceStatus(InvoiceStatus.UNPAID);
+    invoiceRepository.save(invoice);
+  }
+
+  private void saveOrder(Oder order) {
+    oderRepository.save(order);
+  }
+
+  private OderResponseDTO mapToResponse(Oder oder){
+    return oderMapper.toResponse(oder);
+  }
+
 
   public void updateStatus(UUID uuid, OderStatus oderStatus){
     Oder oder = oderRepository.findById(uuid)
