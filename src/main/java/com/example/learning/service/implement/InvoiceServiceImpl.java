@@ -39,4 +39,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         .map(invoiceMapper::toResponse)
         .toList();
   }
+
+  @Override
+  public InvoiceResponseDTO getInvoiceByOrderId(UUID id) {
+    Invoice invoice = invoiceRepository.findByOrderId(id)
+        .orElseThrow(() -> new RuntimeException("invoice not found"));
+
+    return invoiceMapper.toResponse(invoice);
+  }
+
+
 }

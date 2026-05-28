@@ -10,4 +10,5 @@ public interface InvoiceService {
   public InvoiceResponseDTO createInvoice(InvoiceRequestDTO invoiceRequestDTO);
   public InvoiceResponseDTO getInvoiceId(UUID id);
   public List<InvoiceResponseDTO> getAllInvoice();
+  public InvoiceResponseDTO getInvoiceByOrderId(UUID id);
 }
