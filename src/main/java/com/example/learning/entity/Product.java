@@ -4,6 +4,7 @@ import com.example.learning.enums.ProductStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +26,7 @@ public class Product extends VersionedEntity {
     private UUID productId;
     @NotBlank
     private String productName;
-    @Max(100)
+    @Size(max=100)
     private String description;
     private BigDecimal price;
     @Enumerated(EnumType.STRING)

@@ -4,15 +4,19 @@ import com.example.learning.dto.request.ProductRequestDTO;
 import com.example.learning.dto.response.ProductResponseDTO;
 import com.example.learning.entity.Inventory;
 import com.example.learning.entity.Product;
+import com.example.learning.exception.ResourceNotFoundException;
 import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.mapper.ProductMapper;
 import com.example.learning.repository.InventoryRepository;
 import com.example.learning.repository.ProductRepository;
+import com.example.learning.service.InventoryService;
 import com.example.learning.service.ProductService;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
   private final ProductRepository productRepository;
   private final ProductMapper productMapper;
   private final InventoryRepository inventoryRepository;
+  private final InventoryService inventoryService;
 
 
 
@@ -32,14 +37,15 @@ public class ProductServiceImpl implements ProductService {
   }
   
   @Override
+  @Transactional
   public ProductResponseDTO createProduct(ProductRequestDTO dto){
     Product product = productMapper.toEntity(dto);
     Product product1 = productRepository.save(product);
 
     Inventory inventory = new Inventory();
     inventory.setProductId(product1.getProductId());
-    inventory.setQuantity(0);
-    inventoryRepository.save(inventory);
+    inventory.setQuantity(BigDecimal.ZERO);
+    inventoryService.createInventory(inventory);
 
     return productMapper.toDTO(product1);
   }
@@ -48,13 +54,14 @@ public class ProductServiceImpl implements ProductService {
   public ProductResponseDTO getProductsId(UUID id) {
     return productRepository.findById(id)
         .map(productMapper::toDTO)
-        .orElseThrow(() -> new RuntimeException("product not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("product not found"));
   }
 
   @Override
+  @Transactional
   public void updateProducts(UUID id, ProductRequestDTO dto) {
     Product product = productRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("product not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("product not found"));
 
     if(dto.getProductName() != null){
       product.setProductName(dto.getProductName());
@@ -70,7 +77,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public void deleteProducts(UUID id){
     Product product = productRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("product not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("product not found"));
 
     productRepository.delete(product);
   }

@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import java.math.BigDecimal;
 import lombok.Data;
 
 import java.util.UUID;
@@ -21,6 +22,6 @@ public class Inventory extends VersionedEntity{
     private UUID productId;
     @NotNull
     @PositiveOrZero
-    private Integer quantity;
+    private BigDecimal quantity;
 
 }

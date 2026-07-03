@@ -1,8 +1,7 @@
 package com.example.learning.dto.response;
 
 import com.example.learning.dto.request.OderItemRequestDTO;
-import com.example.learning.entity.OderItem;
-import com.example.learning.enums.OderStatus;
+import com.example.learning.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +18,6 @@ public class OderResponseDTO {
   private UUID oderId;
   private UUID userId;
   private BigDecimal totalAmount;
-  private OderStatus oderStatus;
-  private List<OderItemRequestDTO> items;
+  private OrderStatus oderStatus;
+  private List<OderItemResponse> items;
 }

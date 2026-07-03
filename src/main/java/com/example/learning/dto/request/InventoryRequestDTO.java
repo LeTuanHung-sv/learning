@@ -1,5 +1,7 @@
 package com.example.learning.dto.request;
 
+import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,5 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InventoryRequestDTO {
   private UUID productId;
-  private Integer quantity;
+  @Positive
+  private BigDecimal quantity;
 }

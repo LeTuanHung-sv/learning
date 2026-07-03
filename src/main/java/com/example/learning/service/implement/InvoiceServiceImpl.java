@@ -3,6 +3,7 @@ package com.example.learning.service.implement;
 import com.example.learning.dto.request.InvoiceRequestDTO;
 import com.example.learning.dto.response.InvoiceResponseDTO;
 import com.example.learning.entity.Invoice;
+import com.example.learning.exception.ResourceNotFoundException;
 import com.example.learning.mapper.InvoiceMapper;
 import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.service.InvoiceService;
@@ -29,7 +30,7 @@ public class InvoiceServiceImpl implements InvoiceService {
   public InvoiceResponseDTO getInvoiceId(UUID id) {
     return invoiceRepository.findById(id)
         .map(invoiceMapper::toResponse)
-        .orElseThrow(() -> new RuntimeException("invoice not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("invoice not found"));
   }
   
   @Override

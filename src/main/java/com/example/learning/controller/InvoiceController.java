@@ -17,22 +17,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/invoices")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class InvoiceController {
   private final InvoiceService invoiceService;
 
-  @PostMapping("/create")
+  @PostMapping("/invoice")
   public ResponseEntity<InvoiceResponseDTO> createInvoice(@Valid @RequestBody InvoiceRequestDTO dto){
     return ResponseEntity.ok(invoiceService.createInvoice(dto));
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/invoice/{id}")
   public ResponseEntity<InvoiceResponseDTO> getInvoiceId(@PathVariable UUID id){
     return ResponseEntity.ok(invoiceService.getInvoiceId(id));
   }
   
-  @GetMapping("/All")
+  @GetMapping("/invoice/All")
   public ResponseEntity<List<InvoiceResponseDTO>> getAllInvoice(){
     return ResponseEntity.ok(invoiceService.getAllInvoice());
   }

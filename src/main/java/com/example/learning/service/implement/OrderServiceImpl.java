@@ -1,0 +1,229 @@
+package com.example.learning.service.implement;
+
+import com.example.learning.dto.request.OderItemRequestDTO;
+import com.example.learning.entity.Inventory;
+import com.example.learning.entity.Invoice;
+import com.example.learning.entity.OderItem;
+import com.example.learning.entity.Product;
+import com.example.learning.enums.InvoiceStatus;
+import com.example.learning.enums.OrderStatus;
+import com.example.learning.exception.BusinessException;
+import com.example.learning.exception.ResourceNotFoundException;
+import com.example.learning.repository.InventoryRepository;
+import com.example.learning.repository.InvoiceRepository;
+import com.example.learning.repository.OderRepository;
+import com.example.learning.repository.OrderItemRepository;
+import com.example.learning.repository.ProductRepository;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
+import com.example.learning.dto.request.OderRequestDTO;
+import com.example.learning.dto.response.OderResponseDTO;
+import com.example.learning.entity.Oder;
+import com.example.learning.mapper.OderMapper;
+import com.example.learning.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class OrderServiceImpl implements OrderService {
+  private final OderRepository oderRepository;
+  private final OderMapper oderMapper;
+  private final OrderItemRepository oderItemRepository;
+  private final ProductRepository productRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final InventoryRepository inventoryRepository;
+
+  @Override
+  public OderResponseDTO getOderId(UUID id) {
+    return oderRepository.findById(id)
+        .map(oderMapper::toResponse)
+        .orElseThrow(()-> new ResourceNotFoundException("id not found"));
+  }
+
+  @Override
+  @Transactional
+  public OderResponseDTO create(OderRequestDTO oderRequestDTO) {
+    for(OderItemRequestDTO item : oderRequestDTO.getItems()){
+      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
+      if(item.getQuantity().compareTo(inventory.getQuantity()) > 0) {
+        throw new BusinessException("quantity is not enough for productId" + item.getProductId());
+      }
+    }
+
+    Oder oder = oderMapper.toEntity(oderRequestDTO);
+    Oder saved = oderRepository.save(oder);
+    for(OderItemRequestDTO item : oderRequestDTO.getItems())
+    {
+      Product product = productRepository.findById(item.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+      OderItem oderItem = OderItem.builder()
+          .oderId(saved.getOderId())
+          .productId(item.getProductId())
+          .quantity(item.getQuantity())
+          .unitPrice(product.getPrice())
+          .build();
+      oderItemRepository.save(oderItem);
+
+      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
+      inventory.setQuantity(
+          inventory.getQuantity().subtract(item.getQuantity())
+      );
+      inventoryRepository.save(inventory);
+    }
+    return oderMapper.toResponse(saved);
+  }
+
+  @Override
+  public List<OderResponseDTO> getAllOder() {
+    return oderRepository.findAll()
+        .stream()
+        .map(oderMapper::toResponse)
+        .toList();
+  }
+
+
+//  @Override
+//  @Transactional
+//  public void createOrderItem(OderRequestDTO request) {
+//    if(request.getItems() == null || request.getItems().isEmpty())
+//      throw new BusinessException("Order must have at least one item");
+//
+//    Oder oder = new Oder();
+//    oder.setUserId(request.getUserId());
+//    oder.setOderStatus(OrderStatus.PENDING);
+//    oder.setTotalAmount(request.getTotalAmount());
+//
+//    oderRepository.save(oder);
+//
+//    for(OderItemRequestDTO dto : request.getItems())
+//    {
+//      Product product = productRepository.findById(dto.getProductId())
+//          .orElseThrow(()->new ResourceNotFoundException("Product not found"));
+//
+//      Inventory inventory = inventoryRepository.findByProductId(dto.getProductId())
+//          .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
+//
+//      if(inventory.getQuantity().compareTo(dto.getQuantity()) < 0) {
+//        throw new BusinessException(
+//            "Product" + product.getProductName()
+//                      + " only has "
+//                      + inventory.getQuantity()
+//                      + " items left."
+//        );
+//      }
+//
+//      inventory.setQuantity(
+//          inventory.getQuantity().subtract(dto.getQuantity())
+//      );
+//
+//    }
+//
+//    for(OderItemRequestDTO items : request.getItems()){
+//      OderItem item = new OderItem();
+//      Product product = productRepository.findById(item.getProductId())
+//          .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+//
+//      item.setOderId(oder.getOderId());
+//      item.setProductId(items.getProductId());
+//      item.setQuantity(items.getQuantity());
+//      item.setSubtotal(product.getPrice().multiply(items.getQuantity()));
+//      item.setUnitPrice(product.getPrice());
+//
+//      oderItemRepository.save(item);
+//    }
+//  }
+
+  @Override
+  @Transactional
+  public OderResponseDTO payOrder(UUID id) {
+    // 1. Tìm Order
+    Oder oder = oderRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    // 2. Chỉ cho phép thanh toán đơn đang PENDING
+    if (oder.getOderStatus() != OrderStatus.PENDING && oder.getOderStatus() != OrderStatus.CONFIRMED) {
+      throw new BusinessException("Only PENDING or CONFIRMED orders can be PAID");
+    }
+
+    // 3. Tìm Invoice
+    Invoice invoice = invoiceRepository.findByOderId(oder.getOderId())
+        .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+
+
+    // 4. Không cho thanh toán lại
+    if (invoice.getInvoiceStatus() == InvoiceStatus.PAID) {
+      throw new BusinessException("Invoice already paid");
+    }
+
+    // 5. Cập nhật Invoice
+    invoice.setInvoiceStatus(InvoiceStatus.PAID);
+    invoiceRepository.save(invoice);
+
+    // 6. Cập nhật Order
+    oder.setOderStatus(OrderStatus.PAID);
+    Oder saved = oderRepository.save(oder);
+
+    // 7. Trả response
+    return oderMapper.toResponse(saved);
+  }
+
+  @Override
+  @Transactional
+  public OderResponseDTO cancelOrder(UUID id){
+    Oder oder = oderRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    if(oder.getOderStatus() == OrderStatus.PAID)
+      throw new BusinessException("Paid order cannot be cancelled");
+
+    if(oder.getOderStatus() == OrderStatus.CANCELLED)
+      throw new BusinessException("Order already cancelled");
+
+
+
+    oder.setOderStatus(OrderStatus.CANCELLED);
+
+    Oder saved = oderRepository.save(oder);
+
+    return oderMapper.toResponse(saved);
+  }
+
+  @Override
+  @Transactional
+  public void updateStatus(UUID uuid, OrderStatus oderStatus){
+    Oder oder = oderRepository.findById(uuid)
+        .orElseThrow(() -> new ResourceNotFoundException("order not found"));
+
+    OrderStatus oderStatus1 = oder.getOderStatus();
+
+    if(oderStatus1 == OrderStatus.PENDING && oderStatus != OrderStatus.CONFIRMED
+                                         && oderStatus != OrderStatus.CANCELLED){
+      throw new BusinessException("PENDING chỉ được chuyển sang CONFIRMED or CANCELLED");
+    }
+
+    if(oderStatus1 == OrderStatus.CONFIRMED && oderStatus != OrderStatus.DELIVERING
+                                           && oderStatus != OrderStatus.CANCELLED){
+      throw new BusinessException("CONFIRMED chỉ được chuyển sang DELIVERING or CANCELLED");
+    }
+
+    if(oderStatus1 == OrderStatus.DELIVERING && oderStatus != OrderStatus.COMPLETED){
+      throw new BusinessException("DELIVERING chỉ chuyển sang COMPLETED");
+    }
+
+    oder.setOderStatus(oderStatus);
+
+    oderRepository.save(oder);
+  }
+
+  @Override
+  @Transactional
+  public void deleteAll(){
+    oderRepository.deleteAll();
+  }
+
+}

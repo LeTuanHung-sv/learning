@@ -28,12 +28,12 @@ public class UserController {
     return ResponseEntity.ok(userService.getUserById(id));
   }
 
-  @PostMapping("users")
+  @PostMapping("/users")
   public ResponseEntity<UserResponseDTO> createUser (@Valid @RequestBody UserRequestDTO dto){
     return ResponseEntity.ok(userService.createUser(dto));
   }
   
-  @GetMapping("/users")
+  @GetMapping("/users/All")
   public ResponseEntity<List<UserResponseDTO>> getAll(){
     return ResponseEntity.ok(userService.getAll());
   }
