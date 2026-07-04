@@ -2,6 +2,7 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.UserRequestDTO;
 import com.example.learning.dto.response.UserResponseDTO;
+import com.example.learning.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import com.example.learning.entity.User;
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void updateUser(UUID id, UserRequestDTO dto) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     if(dto.getUserName() != null)
       user.setFullName(dto.getUserName());
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void deleteUser(UUID id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("user not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("user not found"));
     userRepository.delete(user);
   }
 }

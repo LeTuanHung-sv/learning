@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
   private final ProductService productService;
 
-  @GetMapping("/products")
+  @GetMapping("/products/All")
   public ResponseEntity<List<ProductResponseDTO>> getProduct(){
     return ResponseEntity.ok(productService.getProduct());
   }

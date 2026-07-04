@@ -1,6 +1,7 @@
 package com.example.learning.enums;
 
-public enum OderStatus {
+public enum OrderStatus {
+    PAID,
     PENDING,
     CONFIRMED,
     DELIVERING,

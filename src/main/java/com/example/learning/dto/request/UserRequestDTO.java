@@ -13,9 +13,10 @@ import lombok.NoArgsConstructor;
 @Data
 
 public class UserRequestDTO {
-
   @NotBlank
   private String userName;
   @NotBlank
   private String phone;
+  @NotBlank
+  private String address;
 }

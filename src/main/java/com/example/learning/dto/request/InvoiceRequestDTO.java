@@ -2,6 +2,9 @@ package com.example.learning.dto.request;
 
 import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.PaymentMethod;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -15,7 +18,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InvoiceRequestDTO {
   private UUID oderId;
+  @NotNull
   private BigDecimal invoiceNumber;
+  @PositiveOrZero
   private BigDecimal totalAmount;
   private PaymentMethod paymentMethod;
   private InvoiceStatus invoiceStatus;

@@ -26,9 +26,11 @@ public class Invoice extends Auditable{
     private UUID invoiceId;
     private UUID oderId;
     @Column(unique = true, nullable = false)
-    private BigDecimal invoiceNumber;
+    private String invoiceNumber;
     @NotNull
     private BigDecimal totalAmount;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
     @Enumerated(EnumType.STRING)
     private InvoiceStatus invoiceStatus;
 }

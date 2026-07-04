@@ -3,12 +3,13 @@ package com.example.learning.controller;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.example.learning.dto.request.OderRequestDTO;
 import com.example.learning.dto.response.OderResponseDTO;
-import com.example.learning.service.OderService;
+import com.example.learning.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class OderController {
-  private final OderService oderService;
+public class OrderController {
+  private final OrderService oderService;
 
   @GetMapping("/get-order/{id}")
   public ResponseEntity<OderResponseDTO> getById(@PathVariable UUID id){
     return ResponseEntity.ok(oderService.getOderId(id));
   }
-  @PostMapping("/create")
+  @PostMapping("/oder")
   public ResponseEntity<OderResponseDTO> createOder(@Valid @RequestBody OderRequestDTO oderRequestDTO){
     return ResponseEntity.ok(oderService.create(oderRequestDTO));
   }
@@ -39,7 +40,6 @@ public class OderController {
 
   @PostMapping("/orderItem")
   public ResponseEntity<String> createOrderItem(@Valid @RequestBody OderRequestDTO dto){
-    System.out.println(dto);
     oderService.createOrderItem(dto);
     return ResponseEntity.ok("Created");
   }
@@ -54,9 +54,16 @@ public class OderController {
     return ResponseEntity.ok(oderService.cancelOrder(id));
   }
 
-  @PatchMapping("/id/status")
+  @PatchMapping("/{id}/status")
   public ResponseEntity<String> updateStatus(@PathVariable UUID id, @RequestBody OderRequestDTO requestDTO){
     oderService.updateStatus(id, requestDTO.getOderStatus());
     return ResponseEntity.ok("Update status success");
   }
+
+  @DeleteMapping("/all")
+  public ResponseEntity<Void> deleteAll(){
+    oderService.deleteAll();
+    return ResponseEntity.noContent().build();
+  }
+
 }

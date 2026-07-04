@@ -3,6 +3,7 @@ package com.example.learning.service.implement;
 import com.example.learning.dto.request.InventoryRequestDTO;
 import com.example.learning.dto.response.InventoryResponseDTO;
 import com.example.learning.entity.Inventory;
+import com.example.learning.exception.ResourceNotFoundException;
 import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.repository.InventoryRepository;
 import com.example.learning.service.InventoryService;
@@ -26,9 +27,14 @@ public class InventoryServiceImpl implements InventoryService {
   }
 
   @Override
+  public Inventory createInventory(Inventory inventory) {
+    return inventoryRepository.save(inventory);
+  }
+
+  @Override
   public void updateInventory(UUID id, InventoryRequestDTO dto) {
     Inventory inventory = inventoryRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Inventory not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
 
     if(dto.getProductId() != null)
       inventory.setProductId(dto.getProductId());
@@ -41,6 +47,6 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   public Inventory getInventoryProductId(UUID productId) {
     return inventoryRepository.findByProductId(productId)
-        .orElseThrow(() -> new RuntimeException("Inventory not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
   }
 }

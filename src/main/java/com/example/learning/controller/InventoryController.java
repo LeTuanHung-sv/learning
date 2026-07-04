@@ -3,6 +3,7 @@ package com.example.learning.controller;
 import com.example.learning.dto.request.InventoryRequestDTO;
 import com.example.learning.dto.response.InventoryResponseDTO;
 import com.example.learning.entity.Inventory;
+import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.service.InventoryService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -21,21 +22,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class InventoryController {
   private final InventoryService inventoryService;
+  private final InventoryMapper inventoryMapper;
 
-  @PostMapping("/create")
+  @PostMapping("/inventory")
   public ResponseEntity<InventoryResponseDTO> createInventory(@Valid @RequestBody InventoryRequestDTO dto){
     return ResponseEntity.ok(inventoryService.create(dto));
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("inventory/{id}")
   public ResponseEntity<String> updateInventory(@PathVariable UUID id, @Valid @RequestBody InventoryRequestDTO dto){
     inventoryService.updateInventory(id, dto);
     return ResponseEntity.ok("Update success");
   }
   
   @GetMapping("inventory/{productId}")
-  public ResponseEntity<Inventory> getInventoryProductId(@PathVariable UUID productId){
+  public ResponseEntity<InventoryResponseDTO> getInventoryProductId(@PathVariable UUID productId){
     Inventory inventory = inventoryService.getInventoryProductId(productId);
-    return ResponseEntity.ok(inventory);
+    return ResponseEntity.ok(inventoryMapper.toResponse(inventory));
   }
 }
