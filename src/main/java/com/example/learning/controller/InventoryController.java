@@ -10,6 +10,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,7 +30,7 @@ public class InventoryController {
     return ResponseEntity.ok(inventoryService.create(dto));
   }
 
-  @PutMapping("inventory/{id}")
+  @PatchMapping("inventory/{id}")
   public ResponseEntity<String> updateInventory(@PathVariable UUID id, @Valid @RequestBody InventoryRequestDTO dto){
     inventoryService.updateInventory(id, dto);
     return ResponseEntity.ok("Update success");

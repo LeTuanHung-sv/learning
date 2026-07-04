@@ -38,11 +38,11 @@ public class OrderController {
     return ResponseEntity.ok(oderService.getAllOder());
   }
 
-  @PostMapping("/orderItem")
-  public ResponseEntity<String> createOrderItem(@Valid @RequestBody OderRequestDTO dto){
-    oderService.createOrderItem(dto);
-    return ResponseEntity.ok("Created");
-  }
+//  @PostMapping("/orderItem")
+//  public ResponseEntity<String> createOrderItem(@Valid @RequestBody OderRequestDTO dto){
+//    oderService.createOrderItem(dto);
+//    return ResponseEntity.ok("Created");
+//  }
 
   @PutMapping("/{id}/pay")
   public ResponseEntity<OderResponseDTO> payOrder(@PathVariable UUID id){

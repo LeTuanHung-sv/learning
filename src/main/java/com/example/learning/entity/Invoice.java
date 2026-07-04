@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import org.hibernate.validator.constraints.UniqueElements;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
+@Builder
 public class Invoice extends Auditable{
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
