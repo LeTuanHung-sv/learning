@@ -7,6 +7,8 @@ import com.example.learning.entity.OderItem;
 import com.example.learning.entity.Product;
 import com.example.learning.enums.InvoiceStatus;
 import com.example.learning.enums.OrderStatus;
+import com.example.learning.enums.PaymentMethod;
+import com.example.learning.enums.ProductStatus;
 import com.example.learning.exception.BusinessException;
 import com.example.learning.exception.ResourceNotFoundException;
 import com.example.learning.repository.InventoryRepository;
@@ -16,6 +18,7 @@ import com.example.learning.repository.OrderItemRepository;
 import com.example.learning.repository.ProductRepository;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.query.Order;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.learning.dto.request.OderRequestDTO;
 import com.example.learning.dto.response.OderResponseDTO;
@@ -45,37 +48,19 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public OderResponseDTO create(OderRequestDTO oderRequestDTO) {
-    for(OderItemRequestDTO item : oderRequestDTO.getItems()){
-      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
-          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
-      if(item.getQuantity().compareTo(inventory.getQuantity()) > 0) {
-        throw new BusinessException("quantity is not enough for productId" + item.getProductId());
-      }
-    }
+    validateProducts(oderRequestDTO);
 
-    Oder oder = oderMapper.toEntity(oderRequestDTO);
-    Oder saved = oderRepository.save(oder);
-    for(OderItemRequestDTO item : oderRequestDTO.getItems())
-    {
-      Product product = productRepository.findById(item.getProductId())
-          .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    validateInventory(oderRequestDTO);
 
-      OderItem oderItem = OderItem.builder()
-          .oderId(saved.getOderId())
-          .productId(item.getProductId())
-          .quantity(item.getQuantity())
-          .unitPrice(product.getPrice())
-          .build();
-      oderItemRepository.save(oderItem);
+    Oder order = createOrder(oderRequestDTO);
 
-      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
-          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
-      inventory.setQuantity(
-          inventory.getQuantity().subtract(item.getQuantity())
-      );
-      inventoryRepository.save(inventory);
-    }
-    return oderMapper.toResponse(saved);
+    createOrderItems(order, oderRequestDTO);
+
+    reserveInventory(oderRequestDTO);
+
+    createInvoice(order);
+
+    return oderMapper.toResponse(order);
   }
 
   @Override
@@ -226,4 +211,61 @@ public class OrderServiceImpl implements OrderService {
     oderRepository.deleteAll();
   }
 
+  private void validateProducts(OderRequestDTO requestDTO){
+    for(OderItemRequestDTO item : requestDTO.getItems()) {
+      Product product = productRepository.findById(item.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+      if (product.getProductStatus() != ProductStatus.Active)
+        throw new BusinessException("Product is inactive");
+    }
+  }
+
+  private void validateInventory(OderRequestDTO requestDTO)
+  {
+    for(OderItemRequestDTO item : requestDTO.getItems()){
+      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
+      if(item.getQuantity().compareTo(inventory.getQuantity()) > 0) {
+        throw new BusinessException("quantity is not enough for productId" + item.getProductId());
+      }
+    }
+  }
+
+  private Oder createOrder(OderRequestDTO requestDTO){
+    Oder order = oderMapper.toEntity(requestDTO);
+    return oderRepository.save(order);
+  }
+
+  private void createOrderItems(Oder order, OderRequestDTO requestDTO){
+    for(OderItemRequestDTO itemRequestDTO : requestDTO.getItems()){
+      OderItem orderItem = OderItem.builder()
+          .oderId(order.getOderId())
+          .productId(itemRequestDTO.getProductId())
+          .quantity(itemRequestDTO.getQuantity())
+          .build();
+
+      oderItemRepository.save(orderItem);
+    }
+  }
+
+  private void reserveInventory(OderRequestDTO requestDTO){
+    for(OderItemRequestDTO item : requestDTO.getItems()){
+      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
+      inventory.setQuantity(
+          inventory.getQuantity().subtract(item.getQuantity())
+      );
+      inventoryRepository.save(inventory);
+    }
+  }
+
+  private void createInvoice(Oder order){
+    Invoice invoice = Invoice.builder()
+        .oderId(order.getOderId())
+        .invoiceStatus(InvoiceStatus.UNPAID)
+        .totalAmount(order.getTotalAmount())
+        .paymentMethod(PaymentMethod.CASH)
+        .build();
+    invoiceRepository.save(invoice);
+  }
 }
