@@ -1,5 +1,6 @@
 package com.example.learning.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OderItemRequestDTO {
+  @NotNull
   private UUID productId;
   @Positive
   private BigDecimal quantity;
