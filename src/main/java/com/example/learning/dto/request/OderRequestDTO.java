@@ -1,7 +1,11 @@
 package com.example.learning.dto.request;
 
 import com.example.learning.enums.OrderStatus;
+import com.example.learning.enums.PaymentMethod;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,11 +20,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class OderRequestDTO {
-  @NotBlank
+  @NotNull
   private UUID userId;
-  @Positive
-  private BigDecimal totalAmount;
-  private OrderStatus oderStatus;
+  @NotNull
+  private PaymentMethod paymentMethod;
+  @NotBlank
+  private String shippingAddress;
+  @NotNull
+  @NotEmpty
+  @Valid
   private List<OderItemRequestDTO> items;
 
 

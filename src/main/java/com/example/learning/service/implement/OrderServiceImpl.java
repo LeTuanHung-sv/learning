@@ -16,7 +16,13 @@ import com.example.learning.repository.InvoiceRepository;
 import com.example.learning.repository.OderRepository;
 import com.example.learning.repository.OrderItemRepository;
 import com.example.learning.repository.ProductRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.hibernate.query.Order;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
 
     reserveInventory(oderRequestDTO);
 
-    createInvoice(order);
+    createInvoice(order, oderRequestDTO.getPaymentMethod());
 
     return oderMapper.toResponse(order);
   }
@@ -71,57 +77,6 @@ public class OrderServiceImpl implements OrderService {
         .toList();
   }
 
-
-//  @Override
-//  @Transactional
-//  public void createOrderItem(OderRequestDTO request) {
-//    if(request.getItems() == null || request.getItems().isEmpty())
-//      throw new BusinessException("Order must have at least one item");
-//
-//    Oder oder = new Oder();
-//    oder.setUserId(request.getUserId());
-//    oder.setOderStatus(OrderStatus.PENDING);
-//    oder.setTotalAmount(request.getTotalAmount());
-//
-//    oderRepository.save(oder);
-//
-//    for(OderItemRequestDTO dto : request.getItems())
-//    {
-//      Product product = productRepository.findById(dto.getProductId())
-//          .orElseThrow(()->new ResourceNotFoundException("Product not found"));
-//
-//      Inventory inventory = inventoryRepository.findByProductId(dto.getProductId())
-//          .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
-//
-//      if(inventory.getQuantity().compareTo(dto.getQuantity()) < 0) {
-//        throw new BusinessException(
-//            "Product" + product.getProductName()
-//                      + " only has "
-//                      + inventory.getQuantity()
-//                      + " items left."
-//        );
-//      }
-//
-//      inventory.setQuantity(
-//          inventory.getQuantity().subtract(dto.getQuantity())
-//      );
-//
-//    }
-//
-//    for(OderItemRequestDTO items : request.getItems()){
-//      OderItem item = new OderItem();
-//      Product product = productRepository.findById(item.getProductId())
-//          .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-//
-//      item.setOderId(oder.getOderId());
-//      item.setProductId(items.getProductId());
-//      item.setQuantity(items.getQuantity());
-//      item.setSubtotal(product.getPrice().multiply(items.getQuantity()));
-//      item.setUnitPrice(product.getPrice());
-//
-//      oderItemRepository.save(item);
-//    }
-//  }
 
   @Override
   @Transactional
@@ -149,8 +104,6 @@ public class OrderServiceImpl implements OrderService {
     invoice.setInvoiceStatus(InvoiceStatus.PAID);
     invoiceRepository.save(invoice);
 
-    // 6. Cập nhật Order
-    oder.setOderStatus(OrderStatus.PAID);
     Oder saved = oderRepository.save(oder);
 
     // 7. Trả response
@@ -222,30 +175,60 @@ public class OrderServiceImpl implements OrderService {
 
   private void validateInventory(OderRequestDTO requestDTO)
   {
-    for(OderItemRequestDTO item : requestDTO.getItems()){
-      Inventory inventory = inventoryRepository.findByProductId(item.getProductId())
-          .orElseThrow(() -> new ResourceNotFoundException("inventory not found for productId" + item.getProductId()));
-      if(item.getQuantity().compareTo(inventory.getQuantity()) > 0) {
-        throw new BusinessException("quantity is not enough for productId" + item.getProductId());
+    Map<UUID, BigDecimal> totalQuantity = new HashMap<>();
+
+    for (OderItemRequestDTO item : requestDTO.getItems()) {
+
+      totalQuantity.merge(
+          item.getProductId(),
+          item.getQuantity(),
+          BigDecimal::add
+      );
+    }
+    for(Map.Entry<UUID, BigDecimal> entry : totalQuantity.entrySet()){
+      Inventory inventory = inventoryRepository.findByProductId(entry.getKey())
+          .orElseThrow(() -> new ResourceNotFoundException("inventory not found"));
+      if(inventory.getQuantity().compareTo(entry.getValue()) < 0) {
+        throw new BusinessException(
+            "Product " + entry.getKey()
+                + " only has "
+                + inventory.getQuantity()
+                + " items but customer requested "
+                + entry.getValue()
+        );
       }
     }
   }
 
   private Oder createOrder(OderRequestDTO requestDTO){
     Oder order = oderMapper.toEntity(requestDTO);
+    order.setOderStatus(OrderStatus.PENDING);
     return oderRepository.save(order);
   }
 
   private void createOrderItems(Oder order, OderRequestDTO requestDTO){
     for(OderItemRequestDTO itemRequestDTO : requestDTO.getItems()){
+      Product product = productRepository.findById(itemRequestDTO.getProductId())
+          .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+      BigDecimal subtotal =product.getPrice().multiply(itemRequestDTO.getQuantity());
+
       OderItem orderItem = OderItem.builder()
           .oderId(order.getOderId())
           .productId(itemRequestDTO.getProductId())
           .quantity(itemRequestDTO.getQuantity())
+          .unitPrice(product.getPrice())
+          .subtotal(subtotal)
           .build();
 
       oderItemRepository.save(orderItem);
     }
+    BigDecimal total = requestDTO.getItems().stream()
+        .map(i -> i.getQuantity().multiply(
+            productRepository.findById(i.getProductId()).get().getPrice()))
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    order.setTotalAmount(total);
+    oderRepository.save(order);
   }
 
   private void reserveInventory(OderRequestDTO requestDTO){
@@ -259,12 +242,16 @@ public class OrderServiceImpl implements OrderService {
     }
   }
 
-  private void createInvoice(Oder order){
+  private void createInvoice(Oder order, PaymentMethod paymentMethod){
+    String invoiceNumber ="INV-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+        + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
     Invoice invoice = Invoice.builder()
         .oderId(order.getOderId())
+        .invoiceNumber(invoiceNumber)
         .invoiceStatus(InvoiceStatus.UNPAID)
         .totalAmount(order.getTotalAmount())
-        .paymentMethod(PaymentMethod.CASH)
+        .paymentMethod(paymentMethod)
         .build();
     invoiceRepository.save(invoice);
   }
