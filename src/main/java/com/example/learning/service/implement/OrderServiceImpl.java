@@ -175,19 +175,24 @@ public class OrderServiceImpl implements OrderService {
 
   private void validateInventory(OderRequestDTO requestDTO)
   {
+    // tạo HashMap totalQuantity dùng để lưu productId = key và tổng quantity = value
     Map<UUID, BigDecimal> totalQuantity = new HashMap<>();
-
+    // duyệt từng Item mà khách hàng chọn
     for (OderItemRequestDTO item : requestDTO.getItems()) {
-
+      // kiểm tra xem trong hashMap có tồn tại productId chưa
+      // ch thì thêm mới productId và quantity
+      // có rồi thì lấy sluong cũ + thêm sluong moi vào và update giá trị trong hashMap
       totalQuantity.merge(
           item.getProductId(),
           item.getQuantity(),
           BigDecimal::add
       );
     }
+    // Duyệt entry qua tất cả các cặp key đang có trong hashMap
     for(Map.Entry<UUID, BigDecimal> entry : totalQuantity.entrySet()){
       Inventory inventory = inventoryRepository.findByProductId(entry.getKey())
           .orElseThrow(() -> new ResourceNotFoundException("inventory not found"));
+      // ktra so luong kho
       if(inventory.getQuantity().compareTo(entry.getValue()) < 0) {
         throw new BusinessException(
             "Product " + entry.getKey()
@@ -207,10 +212,11 @@ public class OrderServiceImpl implements OrderService {
   }
 
   private void createOrderItems(Oder order, OderRequestDTO requestDTO){
+    BigDecimal total = BigDecimal.ZERO;
     for(OderItemRequestDTO itemRequestDTO : requestDTO.getItems()){
       Product product = productRepository.findById(itemRequestDTO.getProductId())
           .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
+      // tính tổng giá tiền của các sản phẩm
       BigDecimal subtotal =product.getPrice().multiply(itemRequestDTO.getQuantity());
 
       OderItem orderItem = OderItem.builder()
@@ -222,11 +228,9 @@ public class OrderServiceImpl implements OrderService {
           .build();
 
       oderItemRepository.save(orderItem);
+      // cộng dồn vào tổng tiền của order
+      total = total.add(subtotal);
     }
-    BigDecimal total = requestDTO.getItems().stream()
-        .map(i -> i.getQuantity().multiply(
-            productRepository.findById(i.getProductId()).get().getPrice()))
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
     order.setTotalAmount(total);
     oderRepository.save(order);
   }
