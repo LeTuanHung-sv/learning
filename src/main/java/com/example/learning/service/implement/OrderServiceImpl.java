@@ -104,6 +104,9 @@ public class OrderServiceImpl implements OrderService {
     invoice.setInvoiceStatus(InvoiceStatus.PAID);
     invoiceRepository.save(invoice);
 
+    // 6. cập nhật order
+    oder.setOderStatus(OrderStatus.PAID);
+
     Oder saved = oderRepository.save(oder);
 
     // 7. Trả response
@@ -133,28 +136,67 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
-  public void updateStatus(UUID uuid, OrderStatus oderStatus){
+  public void updateStatus(UUID uuid, OrderStatus oderStatus  ) {// oderStatus = Delivering
+    // tìm kiếm order
     Oder oder = oderRepository.findById(uuid)
         .orElseThrow(() -> new ResourceNotFoundException("order not found"));
+    // lấy status ở DB
+    OrderStatus currentStatus = oder.getOderStatus(); // CONFIRMED
 
-    OrderStatus oderStatus1 = oder.getOderStatus();
-
-    if(oderStatus1 == OrderStatus.PENDING && oderStatus != OrderStatus.CONFIRMED
-                                         && oderStatus != OrderStatus.CANCELLED){
-      throw new BusinessException("PENDING chỉ được chuyển sang CONFIRMED or CANCELLED");
+    // nếu ở trạng thái COMPLETED -> quăng Exception
+    if (currentStatus == OrderStatus.COMPLETED) {
+      throw new BusinessException("Order is already completed");
     }
 
-    if(oderStatus1 == OrderStatus.CONFIRMED && oderStatus != OrderStatus.DELIVERING
-                                           && oderStatus != OrderStatus.CANCELLED){
-      throw new BusinessException("CONFIRMED chỉ được chuyển sang DELIVERING or CANCELLED");
+    // nếu ở trạng thái CANCELLED -> quăng Exception
+    if (currentStatus == OrderStatus.CANCELLED) {
+      throw new BusinessException("Order is already cancelled");
     }
 
-    if(oderStatus1 == OrderStatus.DELIVERING && oderStatus != OrderStatus.COMPLETED){
-      throw new BusinessException("DELIVERING chỉ chuyển sang COMPLETED");
+    switch (currentStatus) {
+      case PENDING:
+        // nếu orderStatus nó != CONFIRMED và != CANCELLED -> quăng lỗi
+        // nếu giống thì xuống dưới setStatus rồi lưu DB
+        if (oderStatus != OrderStatus.CONFIRMED
+            && oderStatus != OrderStatus.CANCELLED) {
+          throw new BusinessException(
+              "PENDING chỉ được chuyển sang CONFIRMED hoặc CANCELLED");
+        }
+        break;
+
+      case CONFIRMED:
+        // nếu nó là DELIVERING thì nó sẽ tìm xem có hóa đơn kh
+        if (oderStatus == OrderStatus.DELIVERING) {
+          Invoice invoice = invoiceRepository.findByOderId(oder.getOderId())
+              .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+          // hóa đơn chưa được xử lý thì quăng exception
+          if (invoice.getInvoiceStatus() != InvoiceStatus.PAID) {
+            throw new BusinessException("order Must be paid before delivering");
+          }
+          // nếu nó != DELIVERING thì check phải CANCELLED kh
+          // nếu kh phải -> quăng lỗi
+          // nếu phải -> setStatus CANCELLED -> lưu DB
+        } else if (oderStatus != OrderStatus.CANCELLED) {
+          throw new BusinessException(
+              "CONFIRMED chỉ được chuyển sang DELIVERING hoặc CANCELLED");
+        }
+
+        break;
+
+      case DELIVERING:
+
+        if (oderStatus != OrderStatus.COMPLETED) {
+          throw new BusinessException(
+              "DELIVERING chỉ được chuyển sang COMPLETED");
+        }
+
+        break;
+
+      default:
+        throw new BusinessException("Invalid order status");
     }
 
     oder.setOderStatus(oderStatus);
-
     oderRepository.save(oder);
   }
 
