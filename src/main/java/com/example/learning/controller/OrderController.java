@@ -1,6 +1,8 @@
 package com.example.learning.controller;
 
 
+import com.example.learning.dto.request.UpdateOrderStatusRequestDTO;
+import com.example.learning.enums.OrderStatus;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,8 +57,8 @@ public class OrderController {
   }
 
   @PatchMapping("/{id}/status")
-  public ResponseEntity<String> updateStatus(@PathVariable UUID id, @RequestBody OderRequestDTO requestDTO){
-    oderService.updateStatus(id, requestDTO.getOderStatus());
+  public ResponseEntity<String> updateStatus(@PathVariable UUID id, @RequestBody UpdateOrderStatusRequestDTO requestDTO){
+    oderService.updateStatus(id, requestDTO.getOrderStatus());
     return ResponseEntity.ok("Update status success");
   }
 

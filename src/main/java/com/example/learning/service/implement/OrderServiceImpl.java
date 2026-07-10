@@ -104,6 +104,9 @@ public class OrderServiceImpl implements OrderService {
     invoice.setInvoiceStatus(InvoiceStatus.PAID);
     invoiceRepository.save(invoice);
 
+    // 6. cập nhật order
+    oder.setOderStatus(OrderStatus.PAID);
+
     Oder saved = oderRepository.save(oder);
 
     // 7. Trả response
@@ -133,28 +136,67 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
-  public void updateStatus(UUID uuid, OrderStatus oderStatus){
+  public void updateStatus(UUID uuid, OrderStatus oderStatus  ) {// oderStatus = Delivering
+    // tìm kiếm order
     Oder oder = oderRepository.findById(uuid)
         .orElseThrow(() -> new ResourceNotFoundException("order not found"));
+    // lấy status ở DB
+    OrderStatus currentStatus = oder.getOderStatus(); // CONFIRMED
 
-    OrderStatus oderStatus1 = oder.getOderStatus();
-
-    if(oderStatus1 == OrderStatus.PENDING && oderStatus != OrderStatus.CONFIRMED
-                                         && oderStatus != OrderStatus.CANCELLED){
-      throw new BusinessException("PENDING chỉ được chuyển sang CONFIRMED or CANCELLED");
+    // nếu ở trạng thái COMPLETED -> quăng Exception
+    if (currentStatus == OrderStatus.COMPLETED) {
+      throw new BusinessException("Order is already completed");
     }
 
-    if(oderStatus1 == OrderStatus.CONFIRMED && oderStatus != OrderStatus.DELIVERING
-                                           && oderStatus != OrderStatus.CANCELLED){
-      throw new BusinessException("CONFIRMED chỉ được chuyển sang DELIVERING or CANCELLED");
+    // nếu ở trạng thái CANCELLED -> quăng Exception
+    if (currentStatus == OrderStatus.CANCELLED) {
+      throw new BusinessException("Order is already cancelled");
     }
 
-    if(oderStatus1 == OrderStatus.DELIVERING && oderStatus != OrderStatus.COMPLETED){
-      throw new BusinessException("DELIVERING chỉ chuyển sang COMPLETED");
+    switch (currentStatus) {
+      case PENDING:
+        // nếu orderStatus nó != CONFIRMED và != CANCELLED -> quăng lỗi
+        // nếu giống thì xuống dưới setStatus rồi lưu DB
+        if (oderStatus != OrderStatus.CONFIRMED
+            && oderStatus != OrderStatus.CANCELLED) {
+          throw new BusinessException(
+              "PENDING chỉ được chuyển sang CONFIRMED hoặc CANCELLED");
+        }
+        break;
+
+      case CONFIRMED:
+        // nếu nó là DELIVERING thì nó sẽ tìm xem có hóa đơn kh
+        if (oderStatus == OrderStatus.DELIVERING) {
+          Invoice invoice = invoiceRepository.findByOderId(oder.getOderId())
+              .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+          // hóa đơn chưa được xử lý thì quăng exception
+          if (invoice.getInvoiceStatus() != InvoiceStatus.PAID) {
+            throw new BusinessException("order Must be paid before delivering");
+          }
+          // nếu nó != DELIVERING thì check phải CANCELLED kh
+          // nếu kh phải -> quăng lỗi
+          // nếu phải -> setStatus CANCELLED -> lưu DB
+        } else if (oderStatus != OrderStatus.CANCELLED) {
+          throw new BusinessException(
+              "CONFIRMED chỉ được chuyển sang DELIVERING hoặc CANCELLED");
+        }
+
+        break;
+
+      case DELIVERING:
+
+        if (oderStatus != OrderStatus.COMPLETED) {
+          throw new BusinessException(
+              "DELIVERING chỉ được chuyển sang COMPLETED");
+        }
+
+        break;
+
+      default:
+        throw new BusinessException("Invalid order status");
     }
 
     oder.setOderStatus(oderStatus);
-
     oderRepository.save(oder);
   }
 
@@ -175,19 +217,24 @@ public class OrderServiceImpl implements OrderService {
 
   private void validateInventory(OderRequestDTO requestDTO)
   {
+    // tạo HashMap totalQuantity dùng để lưu productId = key và tổng quantity = value
     Map<UUID, BigDecimal> totalQuantity = new HashMap<>();
-
+    // duyệt từng Item mà khách hàng chọn
     for (OderItemRequestDTO item : requestDTO.getItems()) {
-
+      // kiểm tra xem trong hashMap có tồn tại productId chưa
+      // ch thì thêm mới productId và quantity
+      // có rồi thì lấy sluong cũ + thêm sluong moi vào và update giá trị trong hashMap
       totalQuantity.merge(
           item.getProductId(),
           item.getQuantity(),
           BigDecimal::add
       );
     }
+    // Duyệt entry qua tất cả các cặp key đang có trong hashMap
     for(Map.Entry<UUID, BigDecimal> entry : totalQuantity.entrySet()){
       Inventory inventory = inventoryRepository.findByProductId(entry.getKey())
           .orElseThrow(() -> new ResourceNotFoundException("inventory not found"));
+      // ktra so luong kho
       if(inventory.getQuantity().compareTo(entry.getValue()) < 0) {
         throw new BusinessException(
             "Product " + entry.getKey()
@@ -207,10 +254,11 @@ public class OrderServiceImpl implements OrderService {
   }
 
   private void createOrderItems(Oder order, OderRequestDTO requestDTO){
+    BigDecimal total = BigDecimal.ZERO;
     for(OderItemRequestDTO itemRequestDTO : requestDTO.getItems()){
       Product product = productRepository.findById(itemRequestDTO.getProductId())
           .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
+      // tính tổng giá tiền của các sản phẩm
       BigDecimal subtotal =product.getPrice().multiply(itemRequestDTO.getQuantity());
 
       OderItem orderItem = OderItem.builder()
@@ -222,11 +270,9 @@ public class OrderServiceImpl implements OrderService {
           .build();
 
       oderItemRepository.save(orderItem);
+      // cộng dồn vào tổng tiền của order
+      total = total.add(subtotal);
     }
-    BigDecimal total = requestDTO.getItems().stream()
-        .map(i -> i.getQuantity().multiply(
-            productRepository.findById(i.getProductId()).get().getPrice()))
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
     order.setTotalAmount(total);
     oderRepository.save(order);
   }
