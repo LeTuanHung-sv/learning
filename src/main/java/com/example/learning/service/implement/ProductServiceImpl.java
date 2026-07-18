@@ -26,8 +26,6 @@ public class ProductServiceImpl implements ProductService {
   private final InventoryRepository inventoryRepository;
   private final InventoryService inventoryService;
 
-
-
   @Override
   public List<ProductResponseDTO> getProduct() {
     return productRepository.findAll()

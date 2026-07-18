@@ -54,14 +54,15 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public OderResponseDTO create(OderRequestDTO oderRequestDTO) {
+    // vì: phải validate trước nếu không thì lỡ KH mua sp không tồn tại, không còn hdong nưữa
     validateProducts(oderRequestDTO);
-
+    // vì: phải validate kho lỡ KH mua sluon nhieu hơn trong kho -> quăng lỗi
     validateInventory(oderRequestDTO);
 
     Oder order = createOrder(oderRequestDTO);
 
     createOrderItems(order, oderRequestDTO);
-
+    // vì nếu khách mua hang ròi thì trừ kho không trừ khách sau mua nhiều < sluong kho cũ và > sluong kho moi --> lỗi
     reserveInventory(oderRequestDTO);
 
     createInvoice(order, oderRequestDTO.getPaymentMethod());
@@ -116,31 +117,32 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public OderResponseDTO cancelOrder(UUID id){
+    // phải check lỡ không có order -> lỗi
     Oder oder = oderRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
+    //order không thể ở trạng thái PAID, nếu ở status paid -> lỗi
     if(oder.getOderStatus() == OrderStatus.PAID)
       throw new BusinessException("Paid order cannot be cancelled");
-
+    // nếu nó ở status cancel thì in ra lỗi đ cancel ròi
     if(oder.getOderStatus() == OrderStatus.CANCELLED)
       throw new BusinessException("Order already cancelled");
-
-
-
+    // nếu đang ở PENDING thì gán lại = cancel
     oder.setOderStatus(OrderStatus.CANCELLED);
-
+    // lưu DB
     Oder saved = oderRepository.save(oder);
-
+    // Trả DTO -> client
     return oderMapper.toResponse(saved);
   }
 
   @Override
   @Transactional
   public void updateStatus(UUID uuid, OrderStatus oderStatus  ) {// oderStatus = Delivering
-    // tìm kiếm order
+    // tìm kiếm order -- tại sao phải tìm
+    // vì muốn update order đó thì order đó phải tồn tại nếu không tồn tại -> lỗi
     Oder oder = oderRepository.findById(uuid)
         .orElseThrow(() -> new ResourceNotFoundException("order not found"));
-    // lấy status ở DB
+    // lấy status ở DB -- tại sao
+    // phải lấy ở DB để biết chuyển status có hợp với logic nghiệp vụ không
     OrderStatus currentStatus = oder.getOderStatus(); // CONFIRMED
 
     // nếu ở trạng thái COMPLETED -> quăng Exception
@@ -214,7 +216,9 @@ public class OrderServiceImpl implements OrderService {
         throw new BusinessException("Product is inactive");
     }
   }
-
+  // trong method này có sử dụng hashMap vì
+  // HashMap giúp gôm lại tổng số lượng mà KH muốn order
+  // merge dùng để ộng dồn dữ liệu lại thay vì if else nhiều lần
   private void validateInventory(OderRequestDTO requestDTO)
   {
     // tạo HashMap totalQuantity dùng để lưu productId = key và tổng quantity = value
