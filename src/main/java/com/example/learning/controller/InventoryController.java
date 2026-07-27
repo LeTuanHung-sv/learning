@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping()
 public class InventoryController {
   private final InventoryService inventoryService;
   private final InventoryMapper inventoryMapper;

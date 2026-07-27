@@ -54,6 +54,8 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public OderResponseDTO create(OderRequestDTO oderRequestDTO) {
+
+
     // vì: phải validate trước nếu không thì lỡ KH mua sp không tồn tại, không còn hdong nưữa
     validateProducts(oderRequestDTO);
     // vì: phải validate kho lỡ KH mua sluon nhieu hơn trong kho -> quăng lỗi
