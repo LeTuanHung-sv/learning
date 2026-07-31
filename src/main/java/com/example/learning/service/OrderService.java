@@ -14,5 +14,4 @@ public interface OrderService {
   public OderResponseDTO payOrder(UUID id);
   public OderResponseDTO cancelOrder(UUID id);
   public void updateStatus(UUID id, OrderStatus status);
-  public void deleteAll();
 }

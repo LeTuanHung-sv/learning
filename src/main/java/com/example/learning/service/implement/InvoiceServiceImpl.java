@@ -18,13 +18,13 @@ public class InvoiceServiceImpl implements InvoiceService {
   private final InvoiceRepository invoiceRepository;
   private final InvoiceMapper invoiceMapper;
 
-  @Override
-  public InvoiceResponseDTO createInvoice(InvoiceRequestDTO invoiceRequestDTO){
-    Invoice invoice = invoiceMapper.toEntity(invoiceRequestDTO);
-
-    Invoice saved = invoiceRepository.save(invoice);
-    return invoiceMapper.toResponse(saved);
-  }
+//  @Override
+//  public InvoiceResponseDTO createInvoice(InvoiceRequestDTO invoiceRequestDTO){
+//    Invoice invoice = invoiceMapper.toEntity(invoiceRequestDTO);
+//
+//    Invoice saved = invoiceRepository.save(invoice);
+//    return invoiceMapper.toResponse(saved);
+//  }
 
   @Override
   public InvoiceResponseDTO getInvoiceId(UUID id) {

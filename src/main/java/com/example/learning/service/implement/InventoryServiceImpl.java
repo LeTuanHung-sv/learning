@@ -45,8 +45,8 @@ public class InventoryServiceImpl implements InventoryService {
     inventoryRepository.save(inventory);
 }
   @Override
-  public Inventory getInventoryProductId(UUID productId) {
-    return inventoryRepository.findByProductId(productId)
-        .orElseThrow(() -> new ResourceNotFoundException("Inventory not found"));
+  public InventoryResponseDTO getInventoryProductId(UUID productId) {
+    Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow(() -> new ResourceNotFoundException("inventory not found"));
+    return inventoryMapper.toResponse(inventory);
   }
 }

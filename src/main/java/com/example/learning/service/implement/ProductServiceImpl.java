@@ -4,6 +4,8 @@ import com.example.learning.dto.request.ProductRequestDTO;
 import com.example.learning.dto.response.ProductResponseDTO;
 import com.example.learning.entity.Inventory;
 import com.example.learning.entity.Product;
+import com.example.learning.enums.ProductStatus;
+import com.example.learning.exception.BusinessException;
 import com.example.learning.exception.ResourceNotFoundException;
 import com.example.learning.mapper.InventoryMapper;
 import com.example.learning.mapper.ProductMapper;
@@ -76,7 +78,11 @@ public class ProductServiceImpl implements ProductService {
   public void deleteProducts(UUID id){
     Product product = productRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("product not found"));
+    if(product.getProductStatus() == ProductStatus.inActive){
+      throw new BusinessException("Product already deleted");
+    }
 
-    productRepository.delete(product);
+    product.setProductStatus(ProductStatus.inActive);
+    productRepository.save(product);
   }
 }

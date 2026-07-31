@@ -84,35 +84,25 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public OderResponseDTO payOrder(UUID id) {
-    // 1. Tìm Order
     Oder oder = oderRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-    // 2. Chỉ cho phép thanh toán đơn đang PENDING
     if (oder.getOderStatus() != OrderStatus.PENDING && oder.getOderStatus() != OrderStatus.CONFIRMED) {
       throw new BusinessException("Only PENDING or CONFIRMED orders can be PAID");
     }
 
-    // 3. Tìm Invoice
     Invoice invoice = invoiceRepository.findByOderId(oder.getOderId())
         .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
 
-
-    // 4. Không cho thanh toán lại
     if (invoice.getInvoiceStatus() == InvoiceStatus.PAID) {
       throw new BusinessException("Invoice already paid");
     }
 
-    // 5. Cập nhật Invoice
     invoice.setInvoiceStatus(InvoiceStatus.PAID);
     invoiceRepository.save(invoice);
 
-    // 6. cập nhật order
-    oder.setOderStatus(OrderStatus.PAID);
-
     Oder saved = oderRepository.save(oder);
 
-    // 7. Trả response
     return oderMapper.toResponse(saved);
   }
 
@@ -122,18 +112,30 @@ public class OrderServiceImpl implements OrderService {
     // phải check lỡ không có order -> lỗi
     Oder oder = oderRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-    //order không thể ở trạng thái PAID, nếu ở status paid -> lỗi
-    if(oder.getOderStatus() == OrderStatus.PAID)
-      throw new BusinessException("Paid order cannot be cancelled");
-    // nếu nó ở status cancel thì in ra lỗi đ cancel ròi
-    if(oder.getOderStatus() == OrderStatus.CANCELLED)
-      throw new BusinessException("Order already cancelled");
-    // nếu đang ở PENDING thì gán lại = cancel
+    if (oder.getOderStatus() != OrderStatus.PENDING
+        && oder.getOderStatus() != OrderStatus.CONFIRMED) {
+
+      throw new BusinessException(
+          "Only PENDING or CONFIRMED orders can be cancelled");
+    }
+
+    List<OderItem> orderItems =
+        oderItemRepository.findByOderId(id);
+
+    for (OderItem item : orderItems) {
+
+      Inventory inventory = inventoryRepository
+          .findByProductId(item.getProductId())
+          .orElseThrow(() ->
+              new ResourceNotFoundException(
+                  "Inventory not found"));
+
+      inventory.setQuantity(
+          inventory.getQuantity().add(item.getQuantity())
+      );
+    }
     oder.setOderStatus(OrderStatus.CANCELLED);
-    // lưu DB
-    Oder saved = oderRepository.save(oder);
-    // Trả DTO -> client
-    return oderMapper.toResponse(saved);
+    return oderMapper.toResponse(oder);
   }
 
   @Override
@@ -202,12 +204,6 @@ public class OrderServiceImpl implements OrderService {
 
     oder.setOderStatus(oderStatus);
     oderRepository.save(oder);
-  }
-
-  @Override
-  @Transactional
-  public void deleteAll(){
-    oderRepository.deleteAll();
   }
 
   private void validateProducts(OderRequestDTO requestDTO){
