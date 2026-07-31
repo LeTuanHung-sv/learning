@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping()
 public class InventoryController {
   private final InventoryService inventoryService;
-  private final InventoryMapper inventoryMapper;
 
   @PostMapping("/inventory")
   public ResponseEntity<InventoryResponseDTO> createInventory(@Valid @RequestBody InventoryRequestDTO dto){
@@ -38,7 +37,6 @@ public class InventoryController {
   
   @GetMapping("inventory/{productId}")
   public ResponseEntity<InventoryResponseDTO> getInventoryProductId(@PathVariable UUID productId){
-    Inventory inventory = inventoryService.getInventoryProductId(productId);
-    return ResponseEntity.ok(inventoryMapper.toResponse(inventory));
+    return ResponseEntity.ok(inventoryService.getInventoryProductId(productId));
   }
 }

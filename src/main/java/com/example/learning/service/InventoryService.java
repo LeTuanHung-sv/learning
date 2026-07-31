@@ -9,5 +9,5 @@ public interface InventoryService {
   public InventoryResponseDTO create (InventoryRequestDTO dto);
   public Inventory createInventory(Inventory inventory);
   public void updateInventory(UUID id, InventoryRequestDTO dto);
-  public Inventory getInventoryProductId (UUID productId);
+  public InventoryResponseDTO getInventoryProductId (UUID productId);
 }
