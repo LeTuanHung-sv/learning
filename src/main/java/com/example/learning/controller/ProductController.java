@@ -30,23 +30,23 @@ public class ProductController {
     return ResponseEntity.ok(productService.getProduct());
   }
   
-  @PostMapping("/product")
+  @PostMapping("/products")
   public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto){
     return ResponseEntity.ok(productService.createProduct(dto));
   }
   
-  @GetMapping("product/{id}")
+  @GetMapping("/products/{id}")
   public ResponseEntity<ProductResponseDTO> getProductsId(@PathVariable UUID id) {
     return ResponseEntity.ok(productService.getProductsId(id));
   }
 
-  @PatchMapping("product/{id}")
+  @PatchMapping("/products/{id}")
   public ResponseEntity<String> updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductRequestDTO dto){
     productService.updateProducts(id,dto);
     return ResponseEntity.ok("Products success");
   }
   
-  @DeleteMapping("product/{id}")
+  @DeleteMapping("/products/{id}")
   public ResponseEntity<String> deleteProduct(@PathVariable UUID id){
     productService.deleteProducts(id);
     return ResponseEntity.ok("Delete successfully");

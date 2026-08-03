@@ -1,5 +1,6 @@
 package com.example.learning.entity;
 
+import com.example.learning.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -29,4 +30,6 @@ public class User extends VersionedEntity {
     private String phone;
     @NotNull
     private String address;
+    @Enumerated(EnumType.STRING)
+    private UserStatus userStatus;
 }

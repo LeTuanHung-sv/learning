@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,18 +34,18 @@ public class UserController {
     return ResponseEntity.ok(userService.createUser(dto));
   }
   
-  @GetMapping("/users/All")
+  @GetMapping("/users")
   public ResponseEntity<List<UserResponseDTO>> getAll(){
     return ResponseEntity.ok(userService.getAll());
   }
   
-  @PutMapping("users/{id}")
+  @PatchMapping("/users/{id}")
   public ResponseEntity<String> updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequestDTO dto){
     userService.updateUser(id,dto);
     return ResponseEntity.ok("Update success");
   }
   
-  @DeleteMapping("users/{id}")
+  @DeleteMapping("/users/{id}")
   public ResponseEntity<String> deleteUser(@PathVariable UUID id){
     userService.deleteUser(id);
     return ResponseEntity.ok("Delete successfully");

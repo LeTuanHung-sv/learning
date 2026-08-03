@@ -27,7 +27,7 @@ public class InvoiceController {
 //    return ResponseEntity.ok(invoiceService.createInvoice(dto));
 //  }
 
-  @GetMapping("/invoice/{id}")
+  @GetMapping("/invoices/{id}")
   public ResponseEntity<InvoiceResponseDTO> getInvoiceId(@PathVariable UUID id){
     return ResponseEntity.ok(invoiceService.getInvoiceId(id));
   }
