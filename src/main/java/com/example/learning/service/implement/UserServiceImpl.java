@@ -2,6 +2,8 @@ package com.example.learning.service.implement;
 
 import com.example.learning.dto.request.UserRequestDTO;
 import com.example.learning.dto.response.UserResponseDTO;
+import com.example.learning.enums.UserStatus;
+import com.example.learning.exception.BusinessException;
 import com.example.learning.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
@@ -60,6 +62,9 @@ public class UserServiceImpl implements UserService {
   public void deleteUser(UUID id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("user not found"));
-    userRepository.delete(user);
+    if(user.getUserStatus() == UserStatus.InActive){
+      throw new BusinessException("User has already been deleted");
+    }
+    user.setUserStatus(UserStatus.InActive);
   }
 }

@@ -156,17 +156,16 @@ public class OrderServiceImpl implements OrderService {
 
     // nếu ở trạng thái CANCELLED -> quăng Exception
     if (currentStatus == OrderStatus.CANCELLED) {
-      throw new BusinessException("Order is already cancelled");
+      throw new BusinessException("Use cancelOrder() to cancel an order.");
     }
 
     switch (currentStatus) {
       case PENDING:
         // nếu orderStatus nó != CONFIRMED và != CANCELLED -> quăng lỗi
         // nếu giống thì xuống dưới setStatus rồi lưu DB
-        if (oderStatus != OrderStatus.CONFIRMED
-            && oderStatus != OrderStatus.CANCELLED) {
+        if (oderStatus != OrderStatus.CONFIRMED) {
           throw new BusinessException(
-              "PENDING chỉ được chuyển sang CONFIRMED hoặc CANCELLED");
+              "PENDING chỉ được chuyển sang CONFIRMED");
         }
         break;
 
@@ -182,9 +181,9 @@ public class OrderServiceImpl implements OrderService {
           // nếu nó != DELIVERING thì check phải CANCELLED kh
           // nếu kh phải -> quăng lỗi
           // nếu phải -> setStatus CANCELLED -> lưu DB
-        } else if (oderStatus != OrderStatus.CANCELLED) {
+        } else {
           throw new BusinessException(
-              "CONFIRMED chỉ được chuyển sang DELIVERING hoặc CANCELLED");
+              "CONFIRMED chỉ được chuyển sang DELIVERING");
         }
 
         break;
