@@ -20,33 +20,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping()
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
   private final ProductService productService;
 
-  @GetMapping("/products")
+  @GetMapping()
   public ResponseEntity<List<ProductResponseDTO>> getProduct(){
     return ResponseEntity.ok(productService.getProduct());
   }
   
-  @PostMapping("/products")
+  @PostMapping()
   public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto){
     return ResponseEntity.ok(productService.createProduct(dto));
   }
   
-  @GetMapping("/products/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<ProductResponseDTO> getProductsId(@PathVariable UUID id) {
     return ResponseEntity.ok(productService.getProductsId(id));
   }
 
-  @PatchMapping("/products/{id}")
+  @PatchMapping("/{id}")
   public ResponseEntity<String> updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductRequestDTO dto){
     productService.updateProducts(id,dto);
     return ResponseEntity.ok("Products success");
   }
   
-  @DeleteMapping("/products/{id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteProduct(@PathVariable UUID id){
     productService.deleteProducts(id);
     return ResponseEntity.ok("Delete successfully");

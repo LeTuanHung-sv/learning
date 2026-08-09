@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping()
+@RequestMapping("/invoices")
 @RequiredArgsConstructor
 public class InvoiceController {
   private final InvoiceService invoiceService;
@@ -27,12 +27,12 @@ public class InvoiceController {
 //    return ResponseEntity.ok(invoiceService.createInvoice(dto));
 //  }
 
-  @GetMapping("/invoices/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<InvoiceResponseDTO> getInvoiceId(@PathVariable UUID id){
     return ResponseEntity.ok(invoiceService.getInvoiceId(id));
   }
   
-  @GetMapping("/invoices")
+  @GetMapping()
   public ResponseEntity<List<InvoiceResponseDTO>> getAllInvoice(){
     return ResponseEntity.ok(invoiceService.getAllInvoice());
   }
