@@ -20,22 +20,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping()
+@RequestMapping("/inventory")
 public class InventoryController {
   private final InventoryService inventoryService;
 
-  @PostMapping("/inventory")
+  @PostMapping()
   public ResponseEntity<InventoryResponseDTO> createInventory(@Valid @RequestBody InventoryRequestDTO dto){
     return ResponseEntity.ok(inventoryService.create(dto));
   }
 
-  @PatchMapping("inventory/{id}")
+  @PatchMapping("/{id}")
   public ResponseEntity<String> updateInventory(@PathVariable UUID id, @Valid @RequestBody InventoryRequestDTO dto){
     inventoryService.updateInventory(id, dto);
     return ResponseEntity.ok("Update success");
   }
   
-  @GetMapping("inventory/{productId}")
+  @GetMapping("/{productId}")
   public ResponseEntity<InventoryResponseDTO> getInventoryProductId(@PathVariable UUID productId){
     return ResponseEntity.ok(inventoryService.getInventoryProductId(productId));
   }
